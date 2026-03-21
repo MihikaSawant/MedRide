@@ -19,7 +19,7 @@ function Register() {
 
     try {
       await axios.post(
-        "https://medride-project.onrender.com/api/auth/register",
+        "/api/auth/register",
         { name, email, password }
       );
 
@@ -31,7 +31,7 @@ function Register() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://medride-project.onrender.com/auth/google";
+    window.location.href = "/auth/google";
   };
 
   return (

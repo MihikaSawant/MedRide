@@ -11,7 +11,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 useEffect(()=>{
 
 axios.get(
-`https://medride-project.onrender.com/api/bookings/history/${user._id}`
+`/api/bookings/history/${user._id}`
 )
 .then(res=>{
 setBookings(res.data);

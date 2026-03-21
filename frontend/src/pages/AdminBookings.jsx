@@ -15,7 +15,7 @@ function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get("https://medride-project.onrender.com/api/bookings");
+      const res = await axios.get("/api/bookings");
       const normalBookings = Array.isArray(res.data)
         ? res.data.filter((booking) => booking.bookingType === "normal")
         : [];
@@ -27,7 +27,7 @@ function AdminBookings() {
 
   const fetchResources = async () => {
     try {
-      const res = await axios.get("https://medride-project.onrender.com/api/bookings/available-resources");
+      const res = await axios.get("/api/bookings/available-resources");
       setResources(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
@@ -45,7 +45,7 @@ function AdminBookings() {
 
       const [driverId, ambulanceId] = value.split("|");
 
-      await axios.put(`https://medride-project.onrender.com/api/bookings/${bookingId}/assign`, {
+      await axios.put(`/api/bookings/${bookingId}/assign`, {
         driverId,
         ambulanceId,
       });
@@ -61,7 +61,7 @@ function AdminBookings() {
 
   const updateStatus = async (bookingId, status) => {
     try {
-      await axios.put(`https://medride-project.onrender.com/api/bookings/${bookingId}/status`, {
+      await axios.put(`/api/bookings/${bookingId}/status`, {
         status,
       });
       fetchBookings();

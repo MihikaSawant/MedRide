@@ -13,7 +13,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 
-const socket = io("https://medride-project.onrender.com");
+const socket = io(process.env.REACT_APP_API_BASE_URL || "https://medride.onrender.com");
 
 const userIcon = new L.Icon({
   iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
@@ -172,7 +172,7 @@ function Tracking() {
         const parsed = JSON.parse(storedBooking);
 
         const res = await axios.get(
-          "https://medride-project.onrender.com/api/bookings/my-bookings",
+          "/api/bookings/my-bookings",
           {
             headers: {
               Authorization: `Bearer ${token}`,

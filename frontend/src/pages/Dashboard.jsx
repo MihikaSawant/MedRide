@@ -55,7 +55,7 @@ function Dashboard() {
   const fetchAnalytics = async (token) => {
     try {
       const bookingsRes = await axios.get(
-        "http://https://medride-project.onrender.com/api/bookings/my-bookings",
+        "/api/bookings/my-bookings",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ function Dashboard() {
       setBookingCount(Array.isArray(bookingsRes.data) ? bookingsRes.data.length : 0);
 
       const reportsRes = await axios.get(
-        "http://https://medride-project.onrender.com/api/reports/my-reports",
+        "/api/reports/my-reports",
         {
           headers: {
             Authorization: `Bearer ${token}`,

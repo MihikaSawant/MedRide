@@ -84,7 +84,7 @@ function EditProfile() {
         const token = localStorage.getItem("userToken");
 
         const res = await axios.put(
-          `https://medride-project.onrender.com/api/auth/update/${userId}`,
+          `/api/auth/update/${userId}`,
           {
             name,
             email,
@@ -119,7 +119,7 @@ function EditProfile() {
         const token = localStorage.getItem("driverToken");
 
         const res = await axios.put(
-          `https://medride-project.onrender.com/api/drivers/update/${userId}`,
+          `/api/drivers/update/${userId}`,
           {
             name,
             phone,

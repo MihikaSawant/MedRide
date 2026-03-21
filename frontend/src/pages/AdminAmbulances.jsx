@@ -25,8 +25,8 @@ function AdminAmbulances() {
 
   const fetchData = async () => {
     try {
-      const ambulanceRes = await axios.get("http://https://medride-project.onrender.com/api/ambulances");
-      const driverRes = await axios.get("http://https://medride-project.onrender.com/api/drivers");
+      const ambulanceRes = await axios.get("/api/ambulances");
+      const driverRes = await axios.get("/api/drivers");
 
       setAmbulances(ambulanceRes.data);
       setDrivers(driverRes.data);
@@ -48,7 +48,7 @@ function AdminAmbulances() {
     }
 
     try {
-      await axios.post("http://https://medride-project.onrender.com/api/ambulances", {
+      await axios.post("/api/ambulances", {
         ...ambulanceForm,
         currentLat: Number(ambulanceForm.currentLat),
         currentLng: Number(ambulanceForm.currentLng),
@@ -79,7 +79,7 @@ function AdminAmbulances() {
     }
 
     try {
-      await axios.post("http://https://medride-project.onrender.com/api/drivers", driverForm);
+      await axios.post("/api/drivers", driverForm);
 
       alert("Driver created successfully");
       setDriverForm({
@@ -97,7 +97,7 @@ function AdminAmbulances() {
 
   const handleStatusUpdate = async (ambulanceId, newStatus) => {
     try {
-      await axios.put(`http://https://medride-project.onrender.com/api/ambulances/${ambulanceId}/status`, {
+      await axios.put(`/api/ambulances/${ambulanceId}/status`, {
         status: newStatus,
       });
       fetchData();

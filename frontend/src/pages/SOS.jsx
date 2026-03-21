@@ -188,7 +188,7 @@ function SOS() {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
 
       const res = await axios.post(
-        "https://medride-project.onrender.com/api/sos/book",
+        "/api/sos/book",
         {
           pickup: locationText,
           pickupLat: location.lat,

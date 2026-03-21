@@ -20,7 +20,7 @@ function DriverLogin() {
     try {
       setLoading(true);
 
-      const res = await axios.post("http://https://medride-project.onrender.com/api/drivers/login", {
+      const res = await axios.post("/api/drivers/login", {
         phone,
         password,
       });

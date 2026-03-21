@@ -16,7 +16,7 @@ const fetchMedicines = async ()=>{
 
 try{
 
-const res = await axios.get("https://medride-project.onrender.com/api/medicines");
+const res = await axios.get("/api/medicines");
 
 setMedicines(res.data);
 
@@ -50,7 +50,7 @@ try{
 
 await axios.post(
 
-"https://medride-project.onrender.com/api/orders",
+"/api/orders",
 
 {
 medicines:cart.map(item=>({

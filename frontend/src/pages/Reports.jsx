@@ -28,7 +28,7 @@ function Reports() {
       }
 
       const res = await axios.get(
-        "https://medride-project.onrender.com/api/reports/my-reports",
+        "/api/reports/my-reports",
         getAuthConfig()
       );
 
@@ -63,7 +63,7 @@ function Reports() {
       formData.append("report", file);
 
       await axios.post(
-        "https://medride-project.onrender.com/api/reports/upload",
+        "/api/reports/upload",
         formData,
         {
           headers: {
@@ -102,7 +102,7 @@ function Reports() {
       }
 
       await axios.delete(
-        `https://medride-project.onrender.com/api/reports/delete/${id}`,
+        `/api/reports/delete/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -160,7 +160,7 @@ function Reports() {
 
                   <div className="report-buttons">
                     <a
-                      href={`https://medride-project.onrender.com/uploads/${report.fileName}`}
+                      href={`/uploads/${report.fileName}`}
                       target="_blank"
                       rel="noreferrer"
                       className="view-report-btn"

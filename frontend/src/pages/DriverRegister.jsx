@@ -19,7 +19,7 @@ function DriverRegister() {
 
   const fetchAmbulances = async () => {
     try {
-      const res = await axios.get("http://https://medride-project.onrender.com/api/ambulances");
+      const res = await axios.get("/api/ambulances");
       setAmbulances(res.data || []);
     } catch (error) {
       console.log("Fetch ambulances error:", error);
@@ -36,7 +36,7 @@ function DriverRegister() {
     try {
       setLoading(true);
 
-      await axios.post("http://https://medride-project.onrender.com/api/drivers", {
+      await axios.post("/api/drivers", {
         name,
         phone,
         password,

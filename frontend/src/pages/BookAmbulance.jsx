@@ -219,7 +219,7 @@ function BookAmbulance() {
       setLoading(true);
 
       const res = await axios.post(
-        "https://medride-project.onrender.com/api/bookings",
+        "/api/bookings",
         {
           pickup,
           hospital,

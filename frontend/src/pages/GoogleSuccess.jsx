@@ -24,7 +24,7 @@ function GoogleSuccess() {
 
         localStorage.setItem("userToken", token);
 
-        const res = await axios.get("https://medride-project.onrender.com/api/auth/me", {
+        const res = await axios.get("/api/auth/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

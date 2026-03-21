@@ -19,7 +19,7 @@ function AdminMedicines() {
   const fetchMedicines = async () => {
     try {
 
-      const res = await axios.get("https://medride-project.onrender.com/api/medicines");
+      const res = await axios.get("/api/medicines");
       setMedicines(res.data);
 
     } catch (error) {
@@ -38,7 +38,7 @@ function AdminMedicines() {
 
     try {
 
-      await axios.post("https://medride-project.onrender.com/api/medicines", {
+      await axios.post("/api/medicines", {
         name,
         category,
         price,
@@ -67,7 +67,7 @@ function AdminMedicines() {
 
     try {
 
-      await axios.delete(`https://medride-project.onrender.com/api/medicines/${id}`);
+      await axios.delete(`/api/medicines/${id}`);
 
       fetchMedicines();
 

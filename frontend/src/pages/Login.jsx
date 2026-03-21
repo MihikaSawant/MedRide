@@ -18,7 +18,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "https://medride-project.onrender.com/api/auth/login",
+        "/api/auth/login",
         { email, password }
       );
 
@@ -42,7 +42,7 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://medride-project.onrender.com/auth/google";
+    window.location.href = "/auth/google";
   };
 
   return (

@@ -18,16 +18,16 @@ function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const bookings = await axios.get("https://medride-project.onrender.com/api/bookings");
+      const bookings = await axios.get("/api/bookings");
       setBookingCount(bookings.data.length);
 
-      const medicines = await axios.get("https://medride-project.onrender.com/api/medicines");
+      const medicines = await axios.get("/api/medicines");
       setMedicineCount(medicines.data.length);
 
-      const orders = await axios.get("https://medride-project.onrender.com/api/orders");
+      const orders = await axios.get("/api/orders");
       setOrderCount(orders.data.length);
 
-      const ambulances = await axios.get("https://medride-project.onrender.com/api/ambulances");
+      const ambulances = await axios.get("/api/ambulances");
       setAmbulanceCount(ambulances.data.length);
     } catch (err) {
       console.log("Admin dashboard fetch error:", err);

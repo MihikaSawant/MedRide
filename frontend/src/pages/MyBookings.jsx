@@ -18,7 +18,7 @@ function MyBookings() {
         return;
       }
 
-      const res = await axios.get("https://medride-project.onrender.com/api/bookings/my-bookings", {
+      const res = await axios.get("/api/bookings/my-bookings", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

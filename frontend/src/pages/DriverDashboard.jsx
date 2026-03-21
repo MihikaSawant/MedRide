@@ -51,7 +51,7 @@ function DriverDashboard() {
       }
 
       const res = await axios.get(
-        `http://https://medride-project.onrender.com/api/drivers/dashboard/${storedDriver._id}`,
+        `/api/drivers/dashboard/${storedDriver._id}`,
         authHeader()
       );
 
@@ -77,7 +77,7 @@ function DriverDashboard() {
       console.log("Sending location:", { lat, lng });
 
       const res = await axios.put(
-        `http://https://medride-project.onrender.com/api/drivers/update-location/${driver._id}`,
+        `/api/drivers/update-location/${driver._id}`,
         { lat, lng },
         authHeader()
       );
@@ -166,7 +166,7 @@ function DriverDashboard() {
       if (!driver?._id) return;
 
       const res = await axios.put(
-        `http://https://medride-project.onrender.com/api/drivers/toggle-status/${driver._id}`,
+        `/api/drivers/toggle-status/${driver._id}`,
         { isOnline: !driver.isOnline },
         authHeader()
       );
@@ -189,7 +189,7 @@ function DriverDashboard() {
       }
 
       const rideRes = await axios.put(
-        `http://https://medride-project.onrender.com/api/drivers/start-ride/${assignedBooking._id}`,
+        `/api/drivers/start-ride/${assignedBooking._id}`,
         {},
         authHeader()
       );
@@ -230,7 +230,7 @@ function DriverDashboard() {
       if (!assignedBooking?._id) return;
 
       await axios.put(
-        `http://https://medride-project.onrender.com/api/drivers/complete-ride/${assignedBooking._id}`,
+        `/api/drivers/complete-ride/${assignedBooking._id}`,
         {},
         authHeader()
       );

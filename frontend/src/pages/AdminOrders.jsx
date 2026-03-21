@@ -12,7 +12,7 @@ fetchOrders();
 
 const fetchOrders = async()=>{
 
-const res = await axios.get("https://medride-project.onrender.com/api/orders");
+const res = await axios.get("/api/orders");
 
 setOrders(res.data);
 
@@ -21,7 +21,7 @@ setOrders(res.data);
 const updateStatus = async(id,status)=>{
 
 await axios.put(
-`https://medride-project.onrender.com/api/orders/${id}/status`,
+`/api/orders/${id}/status`,
 {status}
 );
 
