@@ -184,8 +184,8 @@ function SOS() {
     try {
       setBookingLoading(true);
 
-      const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const token = localStorage.getItem("userToken");
+      const user = JSON.parse(localStorage.getItem("userData") || "{}");
 
       const res = await axios.post(
         "/api/sos/book",
@@ -200,7 +200,7 @@ function SOS() {
         },
         {
           headers: {
-            Authorization: token,
+            Authorization: `Bearer ${token}`,
           },
         }
       );

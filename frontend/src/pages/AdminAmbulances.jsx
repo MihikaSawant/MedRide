@@ -25,8 +25,13 @@ function AdminAmbulances() {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem("token");
       const ambulanceRes = await axios.get("/api/ambulances");
-      const driverRes = await axios.get("/api/drivers");
+      const driverRes = await axios.get("/api/drivers", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       setAmbulances(ambulanceRes.data);
       setDrivers(driverRes.data);
