@@ -17,4 +17,6 @@ router.get("/driver-dashboard/:ambulanceId", getDriverDashboard);
 router.put("/:ambulanceId/status", updateAmbulanceAvailability);
 router.put("/complete-booking/:bookingId", completeSOSBooking);
 
+module.exports = router;
+
 

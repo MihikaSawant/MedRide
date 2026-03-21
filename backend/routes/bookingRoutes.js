@@ -26,3 +26,5 @@ router.get(
 router.put("/:id/status", bookingController.updateBookingStatus);
 router.put("/:id/assign", bookingController.assignAmbulance);
 
+module.exports = router;
+

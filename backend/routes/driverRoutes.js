@@ -38,3 +38,5 @@ router.put(
   driverController.completeRide
 );
 
+module.exports = router;
+
