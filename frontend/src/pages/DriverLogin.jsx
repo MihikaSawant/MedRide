@@ -41,6 +41,9 @@ function DriverLogin() {
         })
       );
 
+      // Dispatch auth state change event
+      window.dispatchEvent(new Event('authStateChanged'));
+
       navigate("/driver-dashboard");
     } catch (error) {
       console.log("Driver login error:", error);

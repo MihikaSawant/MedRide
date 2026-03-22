@@ -37,6 +37,9 @@ function Login() {
       localStorage.setItem("userToken", res.data.token);
       localStorage.setItem("userData", JSON.stringify(loggedInUser));
 
+      // Dispatch auth state change event
+      window.dispatchEvent(new Event('authStateChanged'));
+
       navigate("/dashboard");
     } catch (err) {
       alert(err?.response?.data?.message || "Login failed");

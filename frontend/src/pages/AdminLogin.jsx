@@ -29,6 +29,9 @@ function AdminLogin() {
         })
       );
 
+      // Dispatch auth state change event
+      window.dispatchEvent(new Event('authStateChanged'));
+
       navigate("/admin-dashboard");
     } else {
       alert("Invalid admin credentials");

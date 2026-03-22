@@ -38,6 +38,10 @@ function GoogleSuccess() {
         };
 
         localStorage.setItem("userData", JSON.stringify(loggedInUser));
+
+        // Dispatch auth state change event
+        window.dispatchEvent(new Event('authStateChanged'));
+
         navigate("/dashboard");
       } catch (error) {
         console.log("Google login error:", error);

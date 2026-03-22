@@ -30,6 +30,9 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("User parse error:", error);
+          // Clear invalid data
+          localStorage.removeItem("userToken");
+          localStorage.removeItem("userData");
         }
       }
 
@@ -42,6 +45,9 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("Driver parse error:", error);
+          // Clear invalid data
+          localStorage.removeItem("driverToken");
+          localStorage.removeItem("driverData");
         }
       }
 
@@ -54,6 +60,9 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("Admin parse error:", error);
+          // Clear invalid data
+          localStorage.removeItem("adminToken");
+          localStorage.removeItem("adminData");
         }
       }
 
@@ -64,6 +73,26 @@ function Navbar() {
 
     syncAuthState();
     setMenuOpen(false);
+
+    // Listen for storage changes (when user logs in/out in another tab)
+    const handleStorageChange = (e) => {
+      if (e.key && (e.key.includes('Token') || e.key.includes('Data'))) {
+        syncAuthState();
+      }
+    };
+
+    // Listen for custom auth state change events (for same-tab updates)
+    const handleAuthChange = () => {
+      syncAuthState();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authStateChanged', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
   }, [location]);
 
   const handleNavigate = (path) => {
@@ -90,6 +119,9 @@ function Navbar() {
     setCurrentUser(null);
     setRole("");
     setIsLoggedIn(false);
+
+    // Dispatch auth state change event
+    window.dispatchEvent(new Event('authStateChanged'));
   };
 
   // CLICKING MEDRIDE WILL ALWAYS OPEN HOME PAGE

@@ -5,17 +5,38 @@ import "../App.css";
 
 function Home() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const checkAuthState = () => {
+      const userToken = localStorage.getItem("userToken");
+      const userData = localStorage.getItem("userData");
+      const driverToken = localStorage.getItem("driverToken");
+      const driverData = localStorage.getItem("driverData");
+      const adminToken = localStorage.getItem("adminToken");
+      const adminData = localStorage.getItem("adminData");
+
+      setIsLoggedIn(!!((userToken && userData) || (driverToken && driverData) || (adminToken && adminData)));
+    };
+
+    checkAuthState();
+
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      checkAuthState();
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('authStateChanged', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
   }, []);
 
   const handleSOS = () => {
-    if (!user) {
+    if (!isLoggedIn) {
       navigate("/login");
     } else {
       navigate("/sos");
@@ -42,7 +63,7 @@ function Home() {
             </div>
           </div>
 
-          {!user && (
+          {!isLoggedIn && (
             <div className="auth-buttons">
               <button className="login-btn" onClick={() => navigate("/login")}>
                 Login
