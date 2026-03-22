@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "../App.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://medride.onrender.com";
+
 function Login() {
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "/api/auth/login",
+        `${API_BASE_URL}/api/auth/login`,
         { email, password }
       );
 
@@ -42,7 +44,7 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/auth/google";
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   return (

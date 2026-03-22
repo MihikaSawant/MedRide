@@ -1,9 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
 const http = require("http");
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
@@ -76,11 +76,12 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: req.user._id, role: "user" }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
-    res.redirect(`${process.env.FRONTEND_URL}/google-success?token=${token}`);
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    return res.redirect(`${frontendUrl}/google-success?token=${token}`);
   }
 );
 
