@@ -18,8 +18,12 @@ function AdminMedicines() {
 
   const fetchMedicines = async () => {
     try {
-
-      const res = await axios.get("/api/medicines");
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get("/api/medicines", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
       setMedicines(res.data);
 
     } catch (error) {
@@ -37,13 +41,17 @@ function AdminMedicines() {
     }
 
     try {
-
+      const token = localStorage.getItem("adminToken");
       await axios.post("/api/medicines", {
         name,
         category,
         price,
         stock,
         description
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
 
       alert("Medicine added");
@@ -66,8 +74,12 @@ function AdminMedicines() {
   const deleteMedicine = async (id) => {
 
     try {
-
-      await axios.delete(`/api/medicines/${id}`);
+      const token = localStorage.getItem("adminToken");
+      await axios.delete(`/api/medicines/${id}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       fetchMedicines();
 

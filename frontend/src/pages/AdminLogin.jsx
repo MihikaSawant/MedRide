@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../App.css";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5050";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -8,10 +11,15 @@ function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (email === "admin@medride.com" && password === "admin123") {
+    try {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/admin/login`, {
+        email,
+        password,
+      });
+
       localStorage.removeItem("userToken");
       localStorage.removeItem("userData");
       localStorage.removeItem("driverToken");
@@ -19,22 +27,15 @@ function AdminLogin() {
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminData");
 
-      localStorage.setItem("adminToken", "admin-token");
-      localStorage.setItem(
-        "adminData",
-        JSON.stringify({
-          name: "Admin",
-          email,
-          role: "admin",
-        })
-      );
+      localStorage.setItem("adminToken", res.data.token);
+      localStorage.setItem("adminData", JSON.stringify(res.data.user));
 
       // Dispatch auth state change event
       window.dispatchEvent(new Event('authStateChanged'));
 
       navigate("/admin-dashboard");
-    } else {
-      alert("Invalid admin credentials");
+    } catch (err) {
+      alert(err?.response?.data?.message || "Admin login failed");
     }
   };
 

@@ -25,8 +25,12 @@ function AdminAmbulances() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const ambulanceRes = await axios.get("/api/ambulances");
+      const token = localStorage.getItem("adminToken");
+      const ambulanceRes = await axios.get("/api/ambulances", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
       const driverRes = await axios.get("/api/drivers", {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -53,10 +57,15 @@ function AdminAmbulances() {
     }
 
     try {
+      const token = localStorage.getItem("adminToken");
       await axios.post("/api/ambulances", {
         ...ambulanceForm,
         currentLat: Number(ambulanceForm.currentLat),
         currentLng: Number(ambulanceForm.currentLng),
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
 
       alert("Ambulance added successfully");
@@ -84,7 +93,12 @@ function AdminAmbulances() {
     }
 
     try {
-      await axios.post("/api/drivers", driverForm);
+      const token = localStorage.getItem("adminToken");
+      await axios.post("/api/drivers", driverForm, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
 
       alert("Driver created successfully");
       setDriverForm({
@@ -102,8 +116,13 @@ function AdminAmbulances() {
 
   const handleStatusUpdate = async (ambulanceId, newStatus) => {
     try {
+      const token = localStorage.getItem("adminToken");
       await axios.put(`/api/ambulances/${ambulanceId}/status`, {
         status: newStatus,
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
       fetchData();
     } catch (error) {

@@ -18,16 +18,21 @@ function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const bookings = await axios.get("/api/bookings");
+      const token = localStorage.getItem("adminToken");
+      const headers = {
+        Authorization: token ? `Bearer ${token}` : "",
+      };
+
+      const bookings = await axios.get("/api/bookings", { headers });
       setBookingCount(bookings.data.length);
 
-      const medicines = await axios.get("/api/medicines");
+      const medicines = await axios.get("/api/medicines", { headers });
       setMedicineCount(medicines.data.length);
 
-      const orders = await axios.get("/api/orders");
+      const orders = await axios.get("/api/orders", { headers });
       setOrderCount(orders.data.length);
 
-      const ambulances = await axios.get("/api/ambulances");
+      const ambulances = await axios.get("/api/ambulances", { headers });
       setAmbulanceCount(ambulances.data.length);
     } catch (err) {
       console.log("Admin dashboard fetch error:", err);

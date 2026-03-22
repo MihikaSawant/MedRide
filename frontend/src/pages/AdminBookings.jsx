@@ -15,7 +15,12 @@ function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get("/api/bookings");
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get("/api/bookings", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
       const normalBookings = Array.isArray(res.data)
         ? res.data.filter((booking) => booking.bookingType === "normal")
         : [];
@@ -27,7 +32,12 @@ function AdminBookings() {
 
   const fetchResources = async () => {
     try {
-      const res = await axios.get("/api/bookings/available-resources");
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.get("/api/bookings/available-resources", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
       setResources(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
@@ -45,9 +55,14 @@ function AdminBookings() {
 
       const [driverId, ambulanceId] = value.split("|");
 
+      const token = localStorage.getItem("adminToken");
       await axios.put(`/api/bookings/${bookingId}/assign`, {
         driverId,
         ambulanceId,
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
 
       alert("Driver assigned successfully");
@@ -61,8 +76,13 @@ function AdminBookings() {
 
   const updateStatus = async (bookingId, status) => {
     try {
+      const token = localStorage.getItem("adminToken");
       await axios.put(`/api/bookings/${bookingId}/status`, {
         status,
+      }, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
       fetchBookings();
     } catch (err) {

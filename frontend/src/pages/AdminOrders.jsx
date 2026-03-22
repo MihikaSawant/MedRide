@@ -12,7 +12,12 @@ fetchOrders();
 
 const fetchOrders = async()=>{
 
-const res = await axios.get("/api/orders");
+const token = localStorage.getItem("adminToken");
+const res = await axios.get("/api/orders", {
+  headers: {
+    Authorization: token ? `Bearer ${token}` : "",
+  },
+});
 
 setOrders(res.data);
 
@@ -20,9 +25,15 @@ setOrders(res.data);
 
 const updateStatus = async(id,status)=>{
 
+const token = localStorage.getItem("adminToken");
 await axios.put(
 `/api/orders/${id}/status`,
-{status}
+{status},
+{
+  headers: {
+    Authorization: token ? `Bearer ${token}` : "",
+  },
+}
 );
 
 fetchOrders();
