@@ -8,6 +8,7 @@ const {
   uploadReport,
   getReports,
   deleteReport,
+  updateReport,
 } = require("../controllers/reportController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -25,6 +26,7 @@ const upload = multer({ storage });
 
 router.post("/upload", authMiddleware, upload.single("report"), uploadReport);
 router.get("/my-reports", authMiddleware, getReports);
+router.put("/update/:id", authMiddleware, upload.single("report"), updateReport);
 router.delete("/delete/:id", authMiddleware, deleteReport);
 
 module.exports = router;

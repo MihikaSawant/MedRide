@@ -5,6 +5,7 @@ import "../App.css";
 
 function Reports() {
   const [file, setFile] = useState(null);
+  const [description, setDescription] = useState("");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -61,6 +62,7 @@ function Reports() {
 
       const formData = new FormData();
       formData.append("report", file);
+      formData.append("description", description);
 
       await axios.post(
         "/api/reports/upload",
@@ -75,6 +77,7 @@ function Reports() {
 
       alert("Report uploaded successfully");
       setFile(null);
+      setDescription("");
 
       const fileInput = document.getElementById("reportFileInput");
       if (fileInput) {
@@ -136,6 +139,14 @@ function Reports() {
               onChange={(e) => setFile(e.target.files[0])}
             />
 
+            <input
+              type="text"
+              placeholder="Enter report description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="description-input"
+            />
+
             <button
               className="upload-report-btn"
               onClick={uploadReport}
@@ -155,6 +166,9 @@ function Reports() {
                 <div className="report-item-card" key={report._id}>
                   <div>
                     <h3>{report.fileName}</h3>
+                    {report.description && (
+                      <p className="report-description">{report.description}</p>
+                    )}
                     <p>{new Date(report.createdAt).toLocaleDateString()}</p>
                   </div>
 
@@ -171,6 +185,7 @@ function Reports() {
                     <button
                       className="delete-report-btn"
                       onClick={() => deleteReport(report._id)}
+                      disabled={loading}
                     >
                       Delete
                     </button>

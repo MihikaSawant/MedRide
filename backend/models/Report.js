@@ -9,6 +9,10 @@ const reportSchema = new mongoose.Schema(
     },
     fileName: {
       type: String
+    },
+    description: {
+      type: String,
+      default: ""
     }
   },
   { timestamps: true }

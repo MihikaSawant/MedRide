@@ -732,6 +732,32 @@ body {
   font-weight: 600;
 }
 
+.update-report-btn {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.update-report-btn:hover {
+  background: #d97706;
+}
+
+.cancel-update-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.cancel-update-btn:hover {
+  background: #4b5563;
+}
+
 .delete-report-btn {
   background: #ef4444;
   color: white;
@@ -739,6 +765,28 @@ body {
   padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
+}
+
+.description-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.description-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.report-description {
+  color: #374151;
+  font-size: 14px;
+  margin: 4px 0 6px;
+  font-style: italic;
 }
 
 /* PROFILE */
