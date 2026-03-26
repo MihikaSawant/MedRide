@@ -3,8 +3,6 @@ const axios = require("axios");
 
 async function getRouteDetails(startLat, startLng, endLat, endLng) {
   try {
-    console.log("ORS INPUT:", { startLat, startLng, endLat, endLng });
-
     if (
       startLat == null ||
       startLng == null ||
@@ -14,44 +12,24 @@ async function getRouteDetails(startLat, startLng, endLat, endLng) {
       return null;
     }
 
-    const response = await axios.post(
-      "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
-      {
-        coordinates: [
-          [startLng, startLat],
-          [endLng, endLat],
-        ],
-      },
-      {
-        headers: {
-          Authorization: process.env.ORS_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+    const response = await axios.get(url);
 
-    console.log("ORS SUCCESS:", response?.data);
-
-    const feature = response?.data?.features?.[0];
-    const summary = feature?.properties?.summary;
-    const geometry = feature?.geometry?.coordinates || [];
-
-    if (!summary) {
-      return null;
+    if (response.data.routes && response.data.routes.length > 0) {
+      const route = response.data.routes[0];
+      return {
+        distanceKm: Number((route.distance / 1000).toFixed(2)),
+        durationMin: Math.max(1, Math.ceil(route.duration / 60)),
+        geometry: route.geometry.coordinates,
+      };
     }
-
-    return {
-      distanceKm: Number((summary.distance / 1000).toFixed(2)),
-      durationMin: Math.max(1, Math.ceil(summary.duration / 60)),
-      geometry,
-    };
+    
+    return null;
   } catch (error) {
-    console.log(
-      "getRouteDetails error:",
-      error?.response?.data || error.message
-    );
+    console.log("getRouteDetails (OSRM) error:", error?.message);
     return null;
   }
 }
 
+module.exports = getRouteDetails;
 module.exports = getRouteDetails;

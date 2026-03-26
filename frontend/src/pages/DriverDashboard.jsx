@@ -118,7 +118,7 @@ function DriverDashboard() {
 
       console.log("Location update response:", res.data);
 
-      if (res.data?.booking) {
+      if (res.data.booking !== undefined) {
         setAssignedBooking(res.data.booking);
       }
     } catch (error) {
@@ -139,8 +139,9 @@ function DriverDashboard() {
       }
     };
 
-    if (!(watching && driver?._id && assignedBooking?._id)) {
+if (!driver?._id || !driver?.isOnline) {
       stopAllTracking();
+      setDriverStatusText("Idle / Offline");
       return;
     }
 
@@ -149,7 +150,7 @@ function DriverDashboard() {
       return;
     }
 
-    setDriverStatusText("Sharing live location");
+    setDriverStatusText("Sharing live location for SOS & live rides");
 
     // Main GPS watcher
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -162,7 +163,7 @@ function DriverDashboard() {
       },
       (error) => {
         console.log("Geolocation error:", error);
-        setDriverStatusText("Location access denied or unavailable");
+        setDriverStatusText("Location access denied or unavailable");       
       },
       {
         enableHighAccuracy: true,
@@ -193,7 +194,7 @@ function DriverDashboard() {
     }, 5000);
 
     return stopAllTracking;
-  }, [watching, driver?._id, assignedBooking?._id]);
+  }, [driver?._id, driver?.isOnline]);
 
   const toggleAvailability = async () => {
     try {

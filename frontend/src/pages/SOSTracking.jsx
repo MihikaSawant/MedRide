@@ -41,11 +41,11 @@ function SOSTracking() {
 
   const loadLatestBooking = async (bookingId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("userToken");
 
       const res = await axios.get(`/api/sos/${bookingId}`, {
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -312,7 +312,16 @@ function SOSTracking() {
                     )}
 
                     {routePoints.length > 0 && (
-                      <Polyline positions={routePoints} />
+                      <Polyline
+                        positions={routePoints}
+                        pathOptions={{ 
+                          color: "#2563eb",
+                          weight: 7,
+                          opacity: 1,
+                          lineCap: "round",
+                          lineJoin: "round"
+                        }}
+                      />
                     )}
                   </MapContainer>
                 </div>

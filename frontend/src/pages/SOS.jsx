@@ -65,14 +65,26 @@ function SOS() {
     }
   };
 
-  const getNearestHospitals = async (lat, lng) => {
+  const getDistanceKm = (lat1, lng1, lat2, lng2) => {
+    const R = 6371; 
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  const getNearestHospitals = async (userLat, userLng) => {
     try {
       const query = `
         [out:json][timeout:25];
         (
-          node["amenity"="hospital"](around:10000,${lat},${lng});
-          way["amenity"="hospital"](around:10000,${lat},${lng});
-          relation["amenity"="hospital"](around:10000,${lat},${lng});
+          node["amenity"="hospital"](around:50000,${userLat},${userLng});
+          way["amenity"="hospital"](around:50000,${userLat},${userLng});
+          relation["amenity"="hospital"](around:50000,${userLat},${userLng});
         );
         out center tags;
       `;
@@ -85,25 +97,35 @@ function SOS() {
       const data = await res.json();
 
       const rawHospitals = data.elements
-        .map((item, index) => ({
-          name: item.tags?.name || `Hospital ${index + 1}`,
-          lat: item.lat ?? item.center?.lat,
-          lng: item.lon ?? item.center?.lon,
-          rawAddress:
-            [
-              item.tags?.["addr:street"],
-              item.tags?.["addr:suburb"],
-              item.tags?.["addr:city"],
-              item.tags?.["addr:state"],
-            ]
-              .filter(Boolean)
-              .join(", ") || "",
-        }))
+        .map((item, index) => {
+          const lat = item.lat ?? item.center?.lat;
+          const lng = item.lon ?? item.center?.lon;
+          const dist = getDistanceKm(userLat, userLng, lat, lng);
+
+          return {
+            name: item.tags?.name || `Hospital ${index + 1}`,
+            lat,
+            lng,
+            distanceKm: dist,
+            rawAddress:
+              [
+                item.tags?.["addr:street"],
+                item.tags?.["addr:suburb"],
+                item.tags?.["addr:city"],
+                item.tags?.["addr:state"],
+              ]
+                .filter(Boolean)
+                .join(", ") || "",
+          };
+        })
         .filter((item) => item.lat != null && item.lng != null);
+
+      // Sort exact nearest first
+      rawHospitals.sort((a, b) => a.distanceKm - b.distanceKm);
 
       const uniqueHospitals = [
         ...new Map(rawHospitals.map((h) => [h.name, h])).values(),
-      ].slice(0, 5);
+      ].slice(0, 1);
 
       const hospitalsWithAddress = await Promise.all(
         uniqueHospitals.map(async (item) => {
@@ -174,6 +196,33 @@ function SOS() {
       setLoading(false);
     }
   }, []);
+
+  const [routePath, setRoutePath] = useState([]);
+  const [routeDetails, setRouteDetails] = useState(null);
+
+  useEffect(() => {
+    if (location && selectedHospital) {
+      const getRoute = async () => {
+        try {
+          const url = `https://router.project-osrm.org/route/v1/driving/${location.lng},${location.lat};${selectedHospital.lng},${selectedHospital.lat}?overview=full&geometries=geojson`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+            setRoutePath(coords);
+            setRouteDetails({
+              distanceKm: (route.distance / 1000).toFixed(2),
+              durationMin: Math.max(1, Math.ceil(route.duration / 60))
+            });
+          }
+        } catch (error) {
+          console.error("OSRM Route Error:", error);
+        }
+      };
+      getRoute();
+    }
+  }, [location, selectedHospital]);
 
   const handleConfirmSOS = async () => {
     if (!location) {
@@ -281,48 +330,42 @@ function SOS() {
                   );
                 })}
 
-                {selectedHospital && (
+                {selectedHospital && routePath.length > 0 ? (
+                  <Polyline
+                    positions={routePath}
+                    pathOptions={{ 
+                      color: "#2563eb",
+                      weight: 7,
+                      opacity: 1,
+                      lineCap: "round",
+                      lineJoin: "round"
+                    }}
+                  />
+                ) : selectedHospital && (
                   <Polyline
                     positions={[
                       [location.lat, location.lng],
                       [selectedHospital.lat, selectedHospital.lng],
                     ]}
+                    pathOptions={{ color: "#2563eb", weight: 4, opacity: 0.5, dashArray: '5, 10' }}
                   />
                 )}
               </MapContainer>
             </div>
           )}
 
-          {nearbyHospitals.length > 0 && (
-            <div className="nearby-hospital-box">
-              <label>Nearest Emergency Hospital</label>
-
-              <select
-                className="hospital-select"
-                value={selectedHospital?.name || ""}
-                onChange={(e) => {
-                  const selected = nearbyHospitals.find(
-                    (h) => h.name === e.target.value
-                  );
-                  setSelectedHospital(selected || null);
-                }}
-              >
-                {nearbyHospitals.map((item, index) => (
-                  <option key={index} value={item.name}>
-                    {item.name} - {item.address}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {selectedHospital && (
-            <div className="info-card">
-              <h3>Selected Hospital</h3>
+          {selectedHospital ? (
+            <div className="info-card" style={{ background: "#e8f5e9", borderColor: "#4caf50", borderWidth: "2px", borderStyle: "solid" }}>
+              <h3 style={{ color: "#2e7d32" }}>Nearest Hospital Selected</h3>
               <p><strong>Name:</strong> {selectedHospital.name}</p>
+              <p><strong>Distance:</strong> {routeDetails ? `${routeDetails.distanceKm} km (Road)` : selectedHospital.distanceKm ? `${selectedHospital.distanceKm.toFixed(2)} km (Aerial)` : "Unknown"}</p>
+              {routeDetails && <p><strong>ETA:</strong> {routeDetails.durationMin} mins</p>}
               <p><strong>Address:</strong> {selectedHospital.address}</p>
-              <p><strong>Latitude:</strong> {selectedHospital.lat}</p>
-              <p><strong>Longitude:</strong> {selectedHospital.lng}</p>
+            </div>
+          ) : (
+            <div className="info-card" style={{ background: "#fff3e0", borderColor: "#ff9800", borderWidth: "2px", borderStyle: "solid" }}>
+              <h3 style={{ color: "#e65100" }}>Finding Hospital...</h3>
+              <p>We are mapping the nearest emergency center for you.</p>
             </div>
           )}
 
