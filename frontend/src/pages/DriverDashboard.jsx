@@ -10,6 +10,7 @@ function DriverDashboard() {
   const [driver, setDriver] = useState(null);
   const [ambulance, setAmbulance] = useState(null);
   const [assignedBooking, setAssignedBooking] = useState(null);
+  const [availableBookings, setAvailableBookings] = useState([]);
   const [watching, setWatching] = useState(false);
   const [driverStatusText, setDriverStatusText] = useState("Idle");
   const [loading, setLoading] = useState(true);
@@ -66,9 +67,42 @@ function DriverDashboard() {
     }
   };
 
+  const fetchAvailableBookings = async () => {
+    try {
+      if (driver && driver.isOnline && driver.status === "available" && !assignedBooking) {
+        const res = await axios.get("/api/bookings/unassigned", authHeader());
+        setAvailableBookings(res.data || []);
+      } else {
+        setAvailableBookings([]);
+      }
+    } catch (error) {
+      console.log("Fetch available bookings error:", error);
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
   }, []);
+
+  useEffect(() => {
+    fetchAvailableBookings();
+    const interval = setInterval(() => {
+      fetchAvailableBookings();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [driver?.isOnline, driver?.status, assignedBooking]);
+
+  const acceptBooking = async (bookingId) => {
+    try {
+      const res = await axios.put(`/api/bookings/${bookingId}/accept`, {}, authHeader());
+      alert("Booking accepted successfully!");
+      loadDashboard();
+    } catch (error) {
+      console.log("Accept booking error:", error);
+      alert(error?.response?.data?.message || "Failed to accept booking or already taken.");
+      fetchAvailableBookings(); // refresh list
+    }
+  };
 
   const sendLocationToBackend = async (lat, lng) => {
     try {
@@ -313,13 +347,13 @@ function DriverDashboard() {
               <p><strong>Booking ID:</strong> {assignedBooking._id}</p>
 
               <div className="driver-btn-group">
-                {assignedBooking.status === "Assigned" && (
+                {(assignedBooking.status === "Assigned" || assignedBooking.status === "Accepted") && (
                   <button className="location-btn" onClick={startRide}>
                     Start Ride
                   </button>
                 )}
 
-                {assignedBooking.status === "On The Way" && (
+                {["On The Way", "Reached Pickup", "Patient Picked", "Reached Hospital"].includes(assignedBooking.status) && (
                   <button className="complete-btn" onClick={completeRide}>
                     Complete Ride
                   </button>
@@ -330,6 +364,45 @@ function DriverDashboard() {
             <div className="info-card">
               <h3>No Active Booking</h3>
               <p>No booking is currently assigned to you.</p>
+              
+              {driver?.isOnline && driver?.status === "available" && (
+                <div style={{ marginTop: "20px" }}>
+                  <h4 style={{ marginBottom: "10px", color: "#4b6cb7" }}>Available Bookings (First Come, First Serve)</h4>
+                  {availableBookings.length === 0 ? (
+                    <p style={{ fontSize: "14px", color: "#666" }}>No pending bookings right now. Waiting...</p>
+                  ) : (
+                    availableBookings.map((booking) => (
+                      <div key={booking._id} style={{ 
+                        border: "1px solid #ddd", 
+                        padding: "15px", 
+                        borderRadius: "8px", 
+                        marginBottom: "10px",
+                        background: "#f9f9f9"
+                      }}>
+                        <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Pickup:</strong> {booking.pickup}</p>
+                        <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Hospital:</strong> {booking.hospital}</p>
+                        <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Phone:</strong> {booking.phone}</p>
+                        <button 
+                          onClick={() => acceptBooking(booking._id)}
+                          style={{
+                            marginTop: "10px",
+                            padding: "8px 15px",
+                            background: "#28a745",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            width: "100%",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          Accept Booking
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           )}
 

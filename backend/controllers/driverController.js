@@ -163,6 +163,7 @@ exports.getLoggedInDriverDashboard = async (req, res) => {
         status: {
           $in: [
             "Assigned",
+            "Accepted",
             "On The Way",
             "Reached Pickup",
             "Patient Picked",
@@ -700,6 +701,7 @@ exports.getLoggedInDriverDashboard = async (req, res) => {
         status: {
           $in: [
             "Assigned",
+            "Accepted",
             "On The Way",
             "Reached Pickup",
             "Patient Picked",

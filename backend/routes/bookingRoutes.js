@@ -19,6 +19,8 @@ router.post("/", authMiddleware, bookingController.createBooking);
 router.get("/my-bookings", authMiddleware, bookingController.getUserBookings);
 
 router.get("/", bookingController.getAllBookings);
+router.get("/unassigned", bookingController.getUnassignedBookings);
+router.put("/:id/accept", authMiddleware, bookingController.driverAcceptBooking);
 router.get(
   "/available-resources",
   bookingController.getAvailableDriversAndAmbulances

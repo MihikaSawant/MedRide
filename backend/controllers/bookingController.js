@@ -232,3 +232,94 @@ exports.getAvailableDriversAndAmbulances = async (req, res) => {
     });
   }
 };
+
+exports.getUnassignedBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({
+      driverId: null,
+      status: { $in: ["Pending", "Searching Driver"] }
+    }).sort({ createdAt: 1 }); // Oldest first (First come first serve)
+
+    return res.status(200).json(bookings);
+  } catch (err) {
+    console.log("getUnassignedBookings error:", err);
+    return res.status(500).json({
+      message: "Failed to fetch unassigned bookings",
+      error: err.message
+    });
+  }
+};
+
+exports.driverAcceptBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const driverId = req.user.driverId || req.user.id || req.user._id;
+
+    // Find the driver & their linked ambulance
+    const driver = await Driver.findById(driverId).populate("ambulanceId");
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    if (!driver.ambulanceId) {
+      return res.status(400).json({ message: "You are not linked to an ambulance." });
+    }
+
+    // Only allow if driver is online and available
+    if (!driver.isOnline || driver.status !== "available") {
+      return res.status(400).json({ message: "You must be online and available to accept a booking." });
+    }
+
+    // Check the booking (use findOneAndUpdate to prevent race conditions)
+    const booking = await Booking.findOneAndUpdate(
+      {
+        _id: bookingId,
+        driverId: null,
+        status: { $in: ["Pending", "Searching Driver"] }
+      },
+      {
+        driverId: driver._id,
+        ambulanceId: driver.ambulanceId._id,
+        ambulanceNumber: driver.ambulanceId.ambulanceNumber || "",
+        driverName: driver.name || "",
+        driverPhone: driver.phone || "",
+        ambulanceLat: driver.ambulanceId.currentLat ?? null,
+        ambulanceLng: driver.ambulanceId.currentLng ?? null,
+        status: "Accepted",
+        assignedBy: "system",
+        routeTarget: "pickup"
+      },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(400).json({ 
+        message: "Booking is no longer available or already accepted by someone else." 
+      });
+    }
+
+    // Update driver state
+    driver.currentBookingId = booking._id;
+    driver.status = "busy";
+    await driver.save();
+
+    // Update ambulance state
+    const ambulance = await Ambulance.findById(driver.ambulanceId._id);
+    if (ambulance) {
+      ambulance.status = "busy";
+      await ambulance.save();
+    }
+
+    return res.status(200).json({
+      message: "Booking accepted successfully",
+      booking
+    });
+
+  } catch (err) {
+    console.log("driverAcceptBooking error:", err);
+    return res.status(500).json({
+      message: "Failed to accept booking",
+      error: err.message
+    });
+  }
+};
