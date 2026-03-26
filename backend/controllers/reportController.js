@@ -42,6 +42,19 @@ exports.getReports = async (req, res) => {
   }
 };
 
+exports.getReportById = async (req, res) => {
+  try {
+    const report = await Report.findOne({ _id: req.params.id, user: req.user.id });
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+    res.json(report);
+  } catch (err) {
+    console.log("Get report error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.deleteReport = async (req, res) => {
   try {
     console.log("Delete report request:", {

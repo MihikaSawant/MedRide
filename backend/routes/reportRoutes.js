@@ -7,6 +7,7 @@ const path = require("path");
 const {
   uploadReport,
   getReports,
+  getReportById,
   deleteReport,
   updateReport,
 } = require("../controllers/reportController");
@@ -26,6 +27,7 @@ const upload = multer({ storage });
 
 router.post("/upload", authMiddleware, upload.single("report"), uploadReport);
 router.get("/my-reports", authMiddleware, getReports);
+router.get("/:id", authMiddleware, getReportById);
 router.put("/update/:id", authMiddleware, upload.single("report"), updateReport);
 router.delete("/delete/:id", authMiddleware, deleteReport);
 

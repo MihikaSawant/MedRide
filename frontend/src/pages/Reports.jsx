@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import "../App.css";
 
 function Reports() {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
   const [reports, setReports] = useState([]);
@@ -173,14 +175,21 @@ function Reports() {
                   </div>
 
                   <div className="report-buttons">
-                    <a
-                      href={`/uploads/${report.fileName}`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
                       className="view-report-btn"
+                      onClick={() => navigate(`/report/${report._id}`)}
+                      style={{ 
+                        padding: "8px 12px", 
+                        background: "#4b6cb7", 
+                        color: "white", 
+                        border: "none", 
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginRight: "10px"
+                      }}
                     >
                       View
-                    </a>
+                    </button>
 
                     <button
                       className="delete-report-btn"

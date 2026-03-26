@@ -10,6 +10,7 @@ import BookAmbulance from "./pages/BookAmbulance";
 import MyBookings from "./pages/MyBookings";
 import EditProfile from "./pages/EditProfile";
 import Reports from "./pages/Reports";
+import ReportDetails from "./pages/ReportDetails";
 import GoogleSuccess from "./pages/GoogleSuccess";
 
 import AdminLogin from "./pages/AdminLogin";
@@ -237,6 +238,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["user"]}>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/report/:id"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <ReportDetails />
             </ProtectedRoute>
           }
         />
