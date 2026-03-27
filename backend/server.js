@@ -14,6 +14,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const sosRoutes = require("./routes/sosRoutes");
 const ambulanceRoutes = require("./routes/ambulanceRoutes");
 const driverRoutes = require("./routes/driverRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const Ambulance = require("./models/Ambulance");
 const Booking = require("./models/Booking");
@@ -66,6 +67,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/sos", sosRoutes);
 app.use("/api/ambulances", ambulanceRoutes);
 app.use("/api/drivers", driverRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.get(
   "/auth/google",

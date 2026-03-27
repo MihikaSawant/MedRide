@@ -31,6 +31,8 @@ import DriverRegister from "./pages/DriverRegister";
 import Tracking from "./pages/Tracking";
 import DriverLive from "./pages/DriverLive";
 
+import Chatbot from "./components/Chatbot";
+
 function getAuthByRole(role) {
   if (role === "user") {
     return {
@@ -352,6 +354,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Chatbot />
     </Router>
   );
 }
