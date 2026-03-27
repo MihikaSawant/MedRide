@@ -1,0 +1,49 @@
+.voice-assistant-container {
+  position: fixed;
+  bottom: 20px;
+  right: 100px; /* Placing it right next to the chatbot */
+  z-index: 9999;
+}
+
+.voice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffb8b1; /* Pastel pink/coral to match the image */
+  color: #111827; /* Dark icon color */
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, background-color 0.2s;
+}
+
+.voice-btn:hover {
+  transform: scale(1.1);
+}
+
+.voice-btn.listening-active {
+  background-color: #ff8fa3; /* Slightly darker pink when active */
+  animation: pulse-ring 1.5s infinite;
+}
+
+.icon-mic {
+  width: 26px;
+  height: 26px;
+  stroke: #12223b;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 177, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 184, 177, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 177, 0);
+  }
+}
+

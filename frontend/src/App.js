@@ -32,6 +32,7 @@ import Tracking from "./pages/Tracking";
 import DriverLive from "./pages/DriverLive";
 
 import Chatbot from "./components/Chatbot";
+import VoiceAssistant from "./components/VoiceAssistant";
 
 function getAuthByRole(role) {
   if (role === "user") {
@@ -355,6 +356,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Chatbot />
+      <VoiceAssistant />
     </Router>
   );
 }

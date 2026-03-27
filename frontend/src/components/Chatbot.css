@@ -6,13 +6,13 @@
 }
 
 .chatbot-toggle-btn {
-  background-color: #007bff;
-  color: white;
+  background-color: #e2e8f0; /* Changing to match your screenshot (light grey/blue) */
+  color: #12223b; /* Dark icon color */
   border: none;
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  font-size: 24px;
+  font-size: 26px; /* Icon size */
   cursor: pointer;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -44,8 +44,18 @@
   background-color: #007bff;
   color: white;
   padding: 15px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-weight: bold;
+}
+
+.chatbot-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .chatbot-header h3 {
