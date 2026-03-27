@@ -55,6 +55,9 @@ function BookAmbulance() {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
 
       if (data?.address) {
@@ -85,6 +88,15 @@ function BookAmbulance() {
         encodeURIComponent(query);
 
       const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") === -1) {
+        throw new Error(`Expected JSON but got ${contentType}`);
+      }
+
       const data = await res.json();
 
       const rawHospitals = data.elements

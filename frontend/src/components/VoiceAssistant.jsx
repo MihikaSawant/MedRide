@@ -41,81 +41,82 @@ const VoiceAssistant = () => {
       return;
     }
 
-    let recognition = null;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = 'en-US';
 
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.lang = 'en-US';
+    recognition.onresult = (event) => {
+      const current = event.resultIndex;
+      const transcript = event.results[current][0].transcript.toLowerCase();
+      console.log("Voice recognized: ", transcript);
 
-      recognition.onresult = (event) => {
-        const current = event.resultIndex;
-        const transcript = event.results[current][0].transcript.toLowerCase();
-        console.log("Voice recognized: ", transcript);
-
-        // --- NAVIGATION COMMANDS ---
-        if (transcript.includes('ambulance')) {
-          speak("Opening Book Ambulance");
-          navigate('/book-ambulance'); 
-          setIsListening(false);
-        } else if (transcript.includes('sos') || transcript.includes('emergency')) {
-          speak("Activating SOS Protocol");
-          navigate('/sos'); 
-          setIsListening(false);
-        } else if (transcript.includes('home')) {
-          speak("Going to Home page");
-          navigate('/');
-          setIsListening(false);
-        } else if (transcript.includes('dashboard')) {
-          speak("Opening Dashboard");
-          if (localStorage.getItem("adminToken")) navigate('/admin-dashboard');
-          else if (localStorage.getItem("driverToken")) navigate('/driver-dashboard');
-          else navigate('/dashboard');
-          setIsListening(false);
-        } else if (transcript.includes('profile')) {
-          speak("Opening your profile");
-          navigate('/profile');
-          setIsListening(false);
-        } else if (transcript.includes('booking')) {
-          speak("Opening your bookings");
-          if (localStorage.getItem("adminToken")) navigate('/admin-bookings');
-          else navigate('/my-bookings');
-          setIsListening(false);
-        } else if (transcript.includes('medicine') || transcript.includes('pharmacy')) {
-          speak("Opening Medicine Store");
-          navigate('/medicine');
-          setIsListening(false);
-        } else if (transcript.includes('report')) {
-          speak("Opening Medical Reports");
-          navigate('/reports');
-          setIsListening(false);
-        } else if (transcript.includes('track')) {
-          speak("Opening Live Tracking");
-          navigate('/tracking');
-          setIsListening(false);
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+      // --- NAVIGATION COMMANDS ---
+      if (transcript.includes('ambulance') || (transcript.includes('book') && !transcript.includes('booking'))) {
+        speak("Opening Book Ambulance");
+        navigate('/book-ambulance'); 
         setIsListening(false);
-      };
-    }
+      } else if (transcript.includes('sos') || transcript.includes('emergency')) {
+        speak("Activating SOS Protocol");
+        navigate('/sos'); 
+        setIsListening(false);
+      } else if (transcript.includes('home')) {
+        speak("Going to Home page");
+        navigate('/');
+        setIsListening(false);
+      } else if (transcript.includes('dashboard')) {
+        speak("Opening Dashboard");
+        if (localStorage.getItem("adminToken")) navigate('/admin-dashboard');
+        else if (localStorage.getItem("driverToken")) navigate('/driver-dashboard');
+        else navigate('/dashboard');
+        setIsListening(false);
+      } else if (transcript.includes('profile')) {
+        speak("Opening your profile");
+        navigate('/profile');
+        setIsListening(false);
+      } else if (transcript.includes('booking')) {
+        speak("Opening your bookings");
+        if (localStorage.getItem("adminToken")) navigate('/admin-bookings');
+        else navigate('/my-bookings');
+        setIsListening(false);
+      } else if (transcript.includes('medicine') || transcript.includes('pharmacy')) {
+        speak("Opening Medicine Store");
+        navigate('/medicine');
+        setIsListening(false);
+      } else if (transcript.includes('report')) {
+        speak("Opening Medical Reports");
+        navigate('/reports');
+        setIsListening(false);
+      } else if (transcript.includes('track')) {
+        speak("Opening Live Tracking");
+        navigate('/tracking');
+        setIsListening(false);
+      } else {
+        console.log("No matching command found for:", transcript);
+      }
+    };
 
-    if (isListening && recognition) {
-      speak("I am listening. What do you need?");
-      recognition.start();
-    } else if (!isListening && recognition) {
-      recognition.stop();
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    if (isListening) {
+      // Small timeout to prevent repeated start errors immediately after render
+      setTimeout(() => {
+        try {
+          speak("I am listening. What do you need?");
+          recognition.start();
+        } catch (e) {
+          console.error("Error starting recognition:", e);
+        }
+      }, 300);
     }
 
     return () => {
-      if (recognition) {
-        try {
-          recognition.stop();
-        } catch (e) {
-          // ignore
-        }
+      try {
+        recognition.stop();
+      } catch (e) {
+        // ignore
       }
     };
   }, [isListening, navigate]);
