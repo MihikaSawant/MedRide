@@ -37,7 +37,7 @@ body{
 
 /* BUTTON */
 .btn{
-  background:#2563eb;
+  background:#00478F;
   color:white;
   padding:10px 16px;
   border:none;
@@ -47,7 +47,7 @@ body{
 }
 
 .btn:hover{
-  background:#1d4ed8;
+  background:#002752;
 }
 
 /* NAVBAR */
@@ -79,7 +79,7 @@ body{
 }
 
 .nav-links a:hover{
-  color:#2563eb;
+  color:#00478F;
 }
 
 /* MOBILE MENU */
