@@ -216,7 +216,13 @@ function BookAmbulance() {
 
   const bookAmbulance = async () => {
     if (!pickup || !hospital || !phone) {
-      alert("Please fill all fields");
+      alert("Please fill all required fields");
+      return;
+    }
+
+    const phoneDigits = String(phone).replace(/\D/g, '');
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      alert("Please enter a valid phone number (at least 10 digits)");
       return;
     }
 

@@ -14,7 +14,13 @@ function Login() {
 
   const loginUser = async () => {
     if (!email || !password) {
-      alert("Please enter email and password");
+      alert("Please enter both email and password");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address");
       return;
     }
 

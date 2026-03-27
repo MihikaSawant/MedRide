@@ -74,6 +74,38 @@ function EditProfile() {
   };
 
   const updateProfile = async () => {
+    if (!name || !email) {
+      alert("Name and Email are required");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    if (phone) {
+      const phoneDigits = String(phone).replace(/\D/g, '');
+      if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+        alert("Please enter a valid phone number (at least 10 digits)");
+        return;
+      }
+    }
+
+    if (emergencyContact) {
+      const ecDigits = String(emergencyContact).replace(/\D/g, '');
+      if (ecDigits.length < 10 || ecDigits.length > 15) {
+        alert("Please enter a valid emergency contact number (at least 10 digits)");
+        return;
+      }
+    }
+
+    if (!bloodGroup || !allergies || !medicalConditions || !emergencyContact) {
+      alert("Medical details (Blood Group, Allergies, Medical Conditions, and Emergency Contact) are required");
+      return;
+    }
+
     try {
       if (!userId && role !== "admin") {
         alert("User not found. Please login again.");

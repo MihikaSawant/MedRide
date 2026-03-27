@@ -43,6 +43,10 @@ function Dashboard() {
 
       setProfileStatus(isProfileComplete ? "Completed" : "Incomplete");
 
+      if (!isProfileComplete) {
+        alert("Please complete your medical details to ensure better emergency assistance.");
+      }
+
       fetchAnalytics(token);
     } catch (error) {
       console.log("Dashboard user parse error:", error);

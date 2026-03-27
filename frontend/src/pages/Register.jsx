@@ -15,8 +15,22 @@ function Register() {
   const [accountType, setAccountType] = useState("Personal");
 
   const registerUser = async () => {
+    // Basic field presence validation
     if (!name || !email || !password) {
-      alert("Fill all fields");
+      alert("Please fill all fields");
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    // Password strength validation
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long");
       return;
     }
 
