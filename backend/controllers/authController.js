@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, accountType } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -19,6 +19,7 @@ exports.register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      accountType: accountType || 'Personal'
     });
 
     await user.save();
@@ -110,6 +111,33 @@ exports.getMe = async (req, res) => {
       ...user.toObject(),
       role: "user",
     });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+exports.addFamilyMember = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const { name, relation, gender, age, bloodGroup, medicalConditions } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Always allow for right now if they can see the button
+    // if (user.accountType !== 'Family') {
+    //  return res.status(400).json({ message: "Not a Family account. Upgrade to add family members." });
+    // }
+
+    user.familyMembers.push({ name, relation, gender, age, bloodGroup, medicalConditions });
+    await user.save();
+
+    return res.json(user);
   } catch (err) {
     return res.status(500).json({
       message: "Server error",

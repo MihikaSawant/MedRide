@@ -12,6 +12,7 @@ function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accountType, setAccountType] = useState("Personal");
 
   const registerUser = async () => {
     if (!name || !email || !password) {
@@ -22,7 +23,7 @@ function Register() {
     try {
       await axios.post(
         `${API_BASE_URL}/api/auth/register`,
-        { name, email, password }
+        { name, email, password, accountType }
       );
 
       alert("Registration successful");
@@ -47,6 +48,27 @@ function Register() {
           <p className="auth-subtext">
             Join MedRide for quick medical assistance
           </p>
+
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <label>
+              <input 
+                type="radio" 
+                value="Personal" 
+                checked={accountType === "Personal"} 
+                onChange={(e) => setAccountType(e.target.value)} 
+              />
+              Personal Profile
+            </label>
+            <label>
+              <input 
+                type="radio" 
+                value="Family" 
+                checked={accountType === "Family"} 
+                onChange={(e) => setAccountType(e.target.value)} 
+              />
+              Family Profile
+            </label>
+          </div>
 
           <input
             type="text"

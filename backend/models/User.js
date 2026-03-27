@@ -41,8 +41,22 @@ type:String
 
 photo:{
 type:String
-}
+},
 
+accountType:{
+type:String,
+enum:['Personal', 'Family'],
+default:'Personal'
+},
+
+familyMembers:[{
+name: String,
+relation: String,
+gender: String,
+age: Number,
+bloodGroup: String,
+medicalConditions: String
+}]
 
 });
 
