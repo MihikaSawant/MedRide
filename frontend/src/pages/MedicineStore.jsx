@@ -3,6 +3,8 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import "../App.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5052';
+
 function MedicineStore(){
 
 const [medicines,setMedicines] = useState([]);
@@ -112,23 +114,31 @@ return(
 
 ):( 
 
-<div className="history-list">
+<div className="history-list" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px', padding: '10px 0'}}>
 
 {medicines.map((m)=>(
-<div className="history-card-modern" key={m._id}>
+<div className="history-card-modern" key={m._id} style={{ display: 'flex', flexDirection: 'column', padding: '10px', height: '100%', justifyContent: 'space-between' }}>
+{m.image ? (
+  <img 
+    src={`${API_BASE_URL}${m.image}`} 
+    alt={m.name} 
+    style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "8px", marginBottom: "10px" }}
+  />
+) : (
+  <div style={{ width: "100%", height: "120px", backgroundColor: "#f0f0f0", borderRadius: "8px", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <span style={{ color: "#aaa", fontSize: "12px" }}>No Image</span>
+  </div>
+)}
 
-<h3>{m.name}</h3>
-
-<p><b>Category:</b> {m.category}</p>
-
-<p><b>Price:</b> ₹{m.price}</p>
-
-<p><b>Stock:</b> {m.stock}</p>
-
-<p>{m.description}</p>
+<div style={{ flexGrow: 1 }}>
+  <h3 style={{ fontSize: "16px", margin: "0 0 5px 0" }}>{m.name}</h3>
+  <p style={{ fontSize: "12px", color: "#666", margin: "0 0 5px 0" }}>{m.category}</p>
+  <h4 style={{ color: "#007BFF", margin: "5px 0" }}>₹{m.price}</h4>
+</div>
 
 <button
 className="confirm-booking-btn"
+style={{ marginTop: "10px", width: "100%", padding: "8px" }}
 onClick={()=>addToCart(m)}
 >
 

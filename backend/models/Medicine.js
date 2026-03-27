@@ -28,6 +28,11 @@ const medicineSchema = new mongoose.Schema({
     default:""
   },
 
+  image:{
+    type:String,
+    default:""
+  },
+
   createdAt:{
     type:Date,
     default:Date.now
