@@ -132,13 +132,13 @@ function Navbar() {
 
   return (
     <>
-      <div className="topbar">
+      <div className="topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div
           className="app-name"
           onClick={handleHomeClick}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
         >
-          MedRide
+          <img src="/medride_logo.png" alt="MedRide Logo" style={{ height: "35px", width: "auto" }} />
         </div>
 
         <div
