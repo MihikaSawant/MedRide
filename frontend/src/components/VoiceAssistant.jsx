@@ -92,6 +92,8 @@ const VoiceAssistant = () => {
         setIsListening(false);
       } else {
         console.log("No matching command found for:", transcript);
+        speak(`I didn't understand. I heard: ${transcript}`);
+        setIsListening(false);
       }
     };
 
@@ -101,15 +103,11 @@ const VoiceAssistant = () => {
     };
 
     if (isListening) {
-      // Small timeout to prevent repeated start errors immediately after render
-      setTimeout(() => {
-        try {
-          speak("I am listening. What do you need?");
-          recognition.start();
-        } catch (e) {
-          console.error("Error starting recognition:", e);
-        }
-      }, 300);
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Error starting recognition:", e);
+      }
     }
 
     return () => {

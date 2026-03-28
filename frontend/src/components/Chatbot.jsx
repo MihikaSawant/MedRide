@@ -35,7 +35,7 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5052/api/chat", {
+      const response = await axios.post("http://localhost:5000/api/chat", {
         message: input,
       });
       const aiMessage = { sender: "ai", text: response.data.reply };
