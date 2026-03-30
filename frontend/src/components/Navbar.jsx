@@ -133,12 +133,14 @@ function Navbar() {
   return (
     <>
       <div className="topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div
-          className="app-name"
-          onClick={handleHomeClick}
-          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
-        >
-          <img src="/medride_logo.png" alt="MedRide Logo" style={{ height: "35px", width: "auto" }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
+            className="app-name"
+            onClick={handleHomeClick}
+            style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+          >
+            <img src="/medride_logo.png" alt="MedRide Logo" style={{ height: "35px", width: "auto" }} />
+          </div>
         </div>
 
         <div

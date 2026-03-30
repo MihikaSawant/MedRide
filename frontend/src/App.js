@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -33,6 +33,46 @@ import DriverLive from "./pages/DriverLive";
 
 import Chatbot from "./components/Chatbot";
 import VoiceAssistant from "./components/VoiceAssistant";
+
+function GestureHandler() {
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const minSwipeDistX = 50;
+    const maxSwipeDistY = 30;
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    };
+
+    const handleTouchEnd = (e) => {
+      const touchEndX = e.changedTouches[0].screenX;
+      const touchEndY = e.changedTouches[0].screenY;
+
+      const distanceX = touchStartX - touchEndX;
+      const distanceY = Math.abs(touchStartY - touchEndY);
+
+      // Edge right-swipe (like native iOS):
+      // Must start near the left edge (< 50px), move enough horizontally, and not too much vertically.
+      if (touchStartX < 50 && distanceX < -minSwipeDistX && distanceY < maxSwipeDistY) {
+        navigate(-1);
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [navigate]);
+
+  return null;
+}
 
 function getAuthByRole(role) {
   if (role === "user") {
@@ -148,6 +188,7 @@ function PublicAuthRoute({ children, role }) {
 function App() {
   return (
     <Router>
+      <GestureHandler />
       <Routes>
         <Route path="/" element={<Home />} />
 
