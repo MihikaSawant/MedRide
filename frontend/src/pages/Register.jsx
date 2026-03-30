@@ -35,15 +35,31 @@ function Register() {
     }
 
     try {
-      await axios.post(
+      const res = await axios.post(
         `${API_BASE_URL}/api/auth/register`,
         { name, email, password, accountType }
       );
 
+      const registeredUser = {
+        ...res.data.user,
+        role: "user",
+      };
+
+      localStorage.removeItem("driverToken");
+      localStorage.removeItem("driverData");
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminData");
+
+      localStorage.setItem("userToken", res.data.token);
+      localStorage.setItem("userData", JSON.stringify(registeredUser));
+
+      // Dispatch auth state change event
+      window.dispatchEvent(new Event('authStateChanged'));
+
       alert("Registration successful");
-      navigate("/login");
+      navigate("/dashboard");
     } catch (err) {
-      alert("Registration failed");
+      alert(err?.response?.data?.message || "Registration failed");
     }
   };
 
