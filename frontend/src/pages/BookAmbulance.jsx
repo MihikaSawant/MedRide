@@ -138,9 +138,11 @@ function BookAmbulance() {
       setNearbyHospitals(hospitalsWithAddress);
 
       if (hospitalsWithAddress.length > 0) {
-        const firstHospital = hospitalsWithAddress[0];
-        setHospital(firstHospital.name);
-        setSelectedHospitalCoords([firstHospital.lat, firstHospital.lng]);
+        if (!hospital) {
+          const firstHospital = hospitalsWithAddress[0];
+          setHospital(firstHospital.name);
+          setSelectedHospitalCoords([firstHospital.lat, firstHospital.lng]);
+        }
       } else {
         alert("No nearby hospitals found");
       }
@@ -211,6 +213,51 @@ function BookAmbulance() {
       setSelectedHospitalCoords([matchedHospital.lat, matchedHospital.lng]);
     } else {
       setSelectedHospitalCoords(null);
+    }
+  };
+
+  const searchCustomHospital = async () => {
+    if (!hospital.trim()) {
+      alert("Please enter a hospital name to search.");
+      return;
+    }
+
+    try {
+      setLocationLoading(true);
+      const query = encodeURIComponent(hospital);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        const result = data[0];
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        
+        setSelectedHospitalCoords([lat, lng]);
+
+        const customHospital = {
+          name: hospital,
+          lat,
+          lng,
+          address: result.display_name,
+        };
+
+        setNearbyHospitals((prev) => {
+          const exists = prev.find((h) => h.name === hospital);
+          if (exists) return prev;
+          return [customHospital, ...prev];
+        });
+
+        alert("Hospital found and added to the map!");
+      } else {
+        alert("Hospital not found. Please try a different name or add the city.");
+        setSelectedHospitalCoords(null);
+      }
+    } catch (error) {
+      console.log("Search custom hospital error:", error);
+      alert("Failed to search hospital location.");
+    } finally {
+      setLocationLoading(false);
     }
   };
 
@@ -313,10 +360,10 @@ function BookAmbulance() {
               {locationLoading ? "Getting Location..." : "Use My Live Location"}
             </button>
 
-            {coords && (
+            {(coords || selectedHospitalCoords) && (
               <div className="map-container">
                 <MapContainer
-                  center={coords}
+                  center={coords || selectedHospitalCoords}
                   zoom={14}
                   style={{ height: "250px", width: "100%", borderRadius: "15px" }}
                 >
@@ -325,13 +372,15 @@ function BookAmbulance() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
 
-                  <Marker position={coords} icon={userIcon}>
-                    <Popup>
-                      <strong>Your Location</strong>
-                      <br />
-                      {pickup}
-                    </Popup>
-                  </Marker>
+                  {coords && (
+                    <Marker position={coords} icon={userIcon}>
+                      <Popup>
+                        <strong>Your Location</strong>
+                        <br />
+                        {pickup}
+                      </Popup>
+                    </Marker>
+                  )}
 
                   {nearbyHospitals.map((item, index) => (
                     <Marker
@@ -366,9 +415,17 @@ function BookAmbulance() {
 
                 <select
                   className="hospital-select"
-                  value={hospital}
-                  onChange={(e) => handleHospitalSelect(e.target.value)}
+                  value={nearbyHospitals.some(h => h.name === hospital) ? hospital : "custom"}
+                  onChange={(e) => {
+                    if (e.target.value === "custom") {
+                      setHospital("");
+                      setSelectedHospitalCoords(null);
+                    } else {
+                      handleHospitalSelect(e.target.value);
+                    }
+                  }}
                 >
+                  <option value="custom">-- Custom Hospital (Type Below) --</option>
                   {nearbyHospitals.map((item, index) => (
                     <option key={index} value={item.name}>
                       {item.name} - {item.address}
@@ -380,12 +437,30 @@ function BookAmbulance() {
 
             <div className="form-group">
               <label>Hospital Name</label>
-              <input
-                type="text"
-                placeholder="Enter hospital name"
-                value={hospital}
-                onChange={(e) => handleHospitalInputChange(e.target.value)}
-              />
+              <div style={{ display: "flex", gap: "10px" }}>
+                <input
+                  type="text"
+                  placeholder="Enter hospital name"
+                  value={hospital}
+                  onChange={(e) => handleHospitalInputChange(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button 
+                  type="button" 
+                  onClick={searchCustomHospital}
+                  disabled={locationLoading}
+                  style={{
+                    padding: "10px 15px",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer"
+                  }}
+                >
+                  {locationLoading ? "Searching..." : "Search"}
+                </button>
+              </div>
             </div>
 
             {selectedHospitalCoords && (
