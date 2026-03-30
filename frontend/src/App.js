@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Toaster, toast } from "react-hot-toast";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -38,36 +39,46 @@ function GestureHandler() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    const minSwipeDistX = 50;
-    const maxSwipeDistY = 30;
+    let startX = 0;
+    let startY = 0;
+    const edgeThreshold = 150; // How far from the edge you can start the swipe (increased for easier triggering)
+    const requiredSwipeDistance = 75; // How far right you must swipe
+    const maxVerticalVariance = 100; // How much you can accidentally swipe up/down while swiping right
 
-    const handleTouchStart = (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
+    const handleStart = (clientX, clientY) => {
+      startX = clientX;
+      startY = clientY;
     };
 
-    const handleTouchEnd = (e) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const touchEndY = e.changedTouches[0].screenY;
+    const handleEnd = (clientX, clientY) => {
+      const diffX = clientX - startX; // Positive means swiped right
+      const diffY = Math.abs(clientY - startY);
 
-      const distanceX = touchStartX - touchEndX;
-      const distanceY = Math.abs(touchStartY - touchEndY);
-
-      // Edge right-swipe (like native iOS):
-      // Must start near the left edge (< 50px), move enough horizontally, and not too much vertically.
-      if (touchStartX < 50 && distanceX < -minSwipeDistX && distanceY < maxSwipeDistY) {
+      // Edge right-swipe:
+      // Must start near the left edge, move far enough to the right, and not wander too far up/down.
+      if (startX < edgeThreshold && diffX > requiredSwipeDistance && diffY < maxVerticalVariance) {
         navigate(-1);
       }
     };
 
+    // Touch events for mobile phones
+    const handleTouchStart = (e) => handleStart(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    const handleTouchEnd = (e) => handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+
+    // Mouse events for desktop testing
+    const handleMouseDown = (e) => handleStart(e.clientX, e.clientY);
+    const handleMouseUp = (e) => handleEnd(e.clientX, e.clientY);
+
     window.addEventListener("touchstart", handleTouchStart);
     window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [navigate]);
 
@@ -186,8 +197,35 @@ function PublicAuthRoute({ children, role }) {
 }
 
 function App() {
+  useEffect(() => {
+    // Override the default browser alert with react-hot-toast
+    window.alert = (message) => {
+      // Small heuristic: if message implies success, use toast.success. If error, use toast.error. 
+      // Otherwise just use normal toast.
+      const lowerMsg = message.toLowerCase();
+      if (lowerMsg.includes("success") || lowerMsg.includes("added") || lowerMsg.includes("completed")) {
+        toast.success(message, { duration: 3000 });
+      } else if (lowerMsg.includes("fail") || lowerMsg.includes("error") || lowerMsg.includes("please") || lowerMsg.includes("invalid") || lowerMsg.includes("denied")) {
+        toast.error(message, { duration: 4000 });
+      } else {
+        toast(message, { duration: 3000 });
+      }
+    };
+  }, []);
+
   return (
     <Router>
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '14px'
+          }
+        }} 
+      />
       <GestureHandler />
       <Routes>
         <Route path="/" element={<Home />} />
