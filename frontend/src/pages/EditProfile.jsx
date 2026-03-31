@@ -216,12 +216,13 @@ function EditProfile() {
           <div className="edit-form-card">
             <div className="photo-upload-modern">
               <img
-                src={photo || "https://via.placeholder.com/120"}
+                src={(photo && photo.trim() !== "") ? photo : "https://via.placeholder.com/120"}
                 alt="profile"
                 className="profile-avatar large"
               />
 
               <label className="upload-btn">
+                <i className="fas fa-camera" style={{ marginRight: '8px' }}></i>
                 Upload Photo
                 <input
                   type="file"
