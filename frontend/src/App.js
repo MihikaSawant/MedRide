@@ -41,7 +41,7 @@ function GestureHandler() {
   React.useEffect(() => {
     let startX = 0;
     let startY = 0;
-    const edgeThreshold = 150; // How far from the edge you can start the swipe (increased for easier triggering)
+    const edgeThreshold = window.innerWidth; // Allow swipe from anywhere
     const requiredSwipeDistance = 75; // How far right you must swipe
     const maxVerticalVariance = 100; // How much you can accidentally swipe up/down while swiping right
 
@@ -51,13 +51,16 @@ function GestureHandler() {
     };
 
     const handleEnd = (clientX, clientY) => {
-      const diffX = clientX - startX; // Positive means swiped right
+      const diffX = clientX - startX; // Positive means swiped right, negative means swiped left
       const diffY = Math.abs(clientY - startY);
 
-      // Edge right-swipe:
-      // Must start near the left edge, move far enough to the right, and not wander too far up/down.
-      if (startX < edgeThreshold && diffX > requiredSwipeDistance && diffY < maxVerticalVariance) {
+      // Swiped left (right to left) -> go back
+      if (diffX < -requiredSwipeDistance && diffY < maxVerticalVariance) {
         navigate(-1);
+      }
+      // Swiped right (left to right) -> go forward
+      else if (diffX > requiredSwipeDistance && diffY < maxVerticalVariance) {
+        navigate(1);
       }
     };
 
