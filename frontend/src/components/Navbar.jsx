@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { 
+  Menu, X, LogOut, Home, User, UserPlus, 
+  MapPin, LayoutDashboard, Truck, FileText, PlusCircle, 
+  Pill, LogIn, HeartPulse, Settings, FileSearch, ShieldCheck
+} from "lucide-react";
+import "./Navigation.css";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -30,7 +36,6 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("User parse error:", error);
-          // Clear invalid data
           localStorage.removeItem("userToken");
           localStorage.removeItem("userData");
         }
@@ -45,7 +50,6 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("Driver parse error:", error);
-          // Clear invalid data
           localStorage.removeItem("driverToken");
           localStorage.removeItem("driverData");
         }
@@ -60,7 +64,6 @@ function Navbar() {
           return;
         } catch (error) {
           console.log("Admin parse error:", error);
-          // Clear invalid data
           localStorage.removeItem("adminToken");
           localStorage.removeItem("adminData");
         }
@@ -74,14 +77,12 @@ function Navbar() {
     syncAuthState();
     setMenuOpen(false);
 
-    // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e) => {
       if (e.key && (e.key.includes('Token') || e.key.includes('Data'))) {
         syncAuthState();
       }
     };
 
-    // Listen for custom auth state change events (for same-tab updates)
     const handleAuthChange = () => {
       syncAuthState();
     };
@@ -120,11 +121,9 @@ function Navbar() {
     setRole("");
     setIsLoggedIn(false);
 
-    // Dispatch auth state change event
     window.dispatchEvent(new Event('authStateChanged'));
   };
 
-  // CLICKING MEDRIDE WILL ALWAYS OPEN HOME PAGE
   const handleHomeClick = () => {
     setMenuOpen(false);
     navigate("/");
@@ -145,100 +144,121 @@ function Navbar() {
 
         <div
           className="menu-btn"
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ cursor: "pointer" }}
+          onClick={() => setMenuOpen(true)}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", color: "#1e293b" }}
         >
-          ☰
+          <Menu size={28} />
         </div>
       </div>
 
       {menuOpen && (
-        <div className="menu-dropdown">
-          {isLoggedIn ? (
-            <>
-              {currentUser && (
-                <div className="welcome">
-                  Welcome, {currentUser.name || role}
-                </div>
-              )}
-
-              {role === "user" && (
-                <>
-                  <div onClick={() => handleNavigate("/dashboard")}>
-                    Dashboard
-                  </div>
-                  <div onClick={() => handleNavigate("/profile")}>
-                    My Profile
-                  </div>
-                  <div onClick={() => handleNavigate("/book-ambulance")}>
-                    Book Ambulance
-                  </div>
-                  <div onClick={() => handleNavigate("/my-bookings")}>
-                    My Bookings
-                  </div>
-                  <div onClick={() => handleNavigate("/reports")}>
-                    Reports
-                  </div>
-                  <div onClick={() => handleNavigate("/medicine")}>
-                    Medicines
-                  </div>
-                  <div onClick={() => handleNavigate("/sos")}>SOS</div>
-                </>
-              )}
-
-              {role === "driver" && (
-                <>
-                  <div onClick={() => handleNavigate("/driver-dashboard")}>
-                    Driver Dashboard
-                  </div>
-                  <div onClick={() => handleNavigate("/profile")}>
-                    My Profile
-                  </div>
-                  <div onClick={() => handleNavigate("/tracking")}>
-                    Tracking
-                  </div>
-                </>
-              )}
-
-              {role === "admin" && (
-                <>
-                  <div onClick={() => handleNavigate("/admin-dashboard")}>
-                    Admin Dashboard
-                  </div>
-                  <div onClick={() => handleNavigate("/admin-bookings")}>
-                    Manage Bookings
-                  </div>
-                  <div onClick={() => handleNavigate("/admin-ambulances")}>
-                    Ambulances
-                  </div>
-                  <div onClick={() => handleNavigate("/admin-medicines")}>
-                    Medicines
-                  </div>
-                  <div onClick={() => handleNavigate("/admin-orders")}>
-                    Orders
-                  </div>
-                  <div onClick={() => handleNavigate("/profile")}>
-                    My Profile
-                  </div>
-                </>
-              )}
-
-              <div onClick={logoutUser}>Logout</div>
-            </>
-          ) : (
-            <>
-              <div onClick={() => handleNavigate("/")}>Home</div>
-              <div onClick={() => handleNavigate("/login")}>User Login</div>
-              <div onClick={() => handleNavigate("/driver-login")}>
-                Driver Login
+        <>
+          <div className="sliding-drawer-overlay" onClick={() => setMenuOpen(false)}></div>
+          <div className={`sliding-drawer ${menuOpen ? 'open' : ''}`}>
+            
+            <div className="drawer-header">
+              <div className="drawer-title">
+                {isLoggedIn && currentUser ? `Hello, ${currentUser.name || role}` : "Welcome"}
               </div>
-              <div onClick={() => handleNavigate("/admin-login")}>
-                Admin Login
-              </div>
-              <div onClick={() => handleNavigate("/register")}>Register</div>
-            </>
-          )}
-        </div>
+              <button className="close-btn" onClick={() => setMenuOpen(false)}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="drawer-content">
+              {isLoggedIn ? (
+                <>
+                  {role === "user" && (
+                    <>
+                      <div className="drawer-item" onClick={() => handleNavigate("/dashboard")}>
+                        <LayoutDashboard size={20} /> Dashboard
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/book-ambulance")}>
+                        <Truck size={20} /> Book Ambulance
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/my-bookings")}>
+                        <FileText size={20} /> My Bookings
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/medicine")}>
+                        <Pill size={20} /> Order Medicine
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/reports")}>
+                        <FileSearch size={20} /> Medical Reports
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/sos")}>
+                        <HeartPulse size={20} color="#ef4444" /> SOS Alert
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/profile")}>
+                        <Settings size={20} /> Account Settings
+                      </div>
+                    </>
+                  )}
+
+                  {role === "driver" && (
+                    <>
+                      <div className="drawer-item" onClick={() => handleNavigate("/driver-dashboard")}>
+                        <LayoutDashboard size={20} /> Driver Dashboard
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/tracking")}>
+                        <MapPin size={20} /> Track Bookings
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/profile")}>
+                        <Settings size={20} /> Account Settings
+                      </div>
+                    </>
+                  )}
+
+                  {role === "admin" && (
+                    <>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-dashboard")}>
+                        <LayoutDashboard size={20} /> Admin Panel
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-bookings")}>
+                        <FileText size={20} /> Manage Bookings
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-ambulances")}>
+                        <Truck size={20} /> Manage Ambulances
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-medicines")}>
+                        <Pill size={20} /> Manage Medicines
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-orders")}>
+                        <FileSearch size={20} /> Medicine Orders
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/profile")}>
+                        <ShieldCheck size={20} /> Account Settings
+                      </div>
+                    </>
+                  )}
+
+                  <div className="drawer-footer">
+                    <div className="drawer-item logout-btn" onClick={logoutUser}>
+                      <LogOut size={20} /> Logout
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="drawer-item" onClick={() => handleNavigate("/")}>
+                    <Home size={20} /> Home
+                  </div>
+                  <div className="drawer-item" onClick={() => handleNavigate("/login")}>
+                    <LogIn size={20} /> User Login
+                  </div>
+                  <div className="drawer-item" onClick={() => handleNavigate("/driver-login")}>
+                    <LogIn size={20} /> Driver Login
+                  </div>
+                  <div className="drawer-item" onClick={() => handleNavigate("/admin-login")}>
+                    <ShieldCheck size={20} /> Admin Login
+                  </div>
+                  <div className="drawer-item" onClick={() => handleNavigate("/register")}>
+                    <UserPlus size={20} /> Register
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </>
   );

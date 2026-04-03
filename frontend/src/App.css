@@ -31,6 +31,7 @@ body {
   overflow-x: hidden;
   position: relative;
   scroll-behavior: smooth;
+  transform: translateZ(0); /* Creates containing block for fixed children */
 }
 
 .phone-screen::-webkit-scrollbar {
@@ -118,7 +119,7 @@ body {
 .searching-page,
 .admin-bookings-page {
   padding: 18px;
-  padding-bottom: 100px;
+  padding-bottom: 20px;
   min-height: calc(100% - 58px);
 }
 
