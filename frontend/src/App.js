@@ -21,6 +21,7 @@ import AdminMedicines from "./pages/AdminMedicines";
 import MedicineStore from "./pages/MedicineStore";
 import AdminOrders from "./pages/AdminOrders";
 import AdminAmbulances from "./pages/AdminAmbulances";
+import AdminReports from "./pages/AdminReports";
 
 import SOS from "./pages/SOS";
 import SOSSearching from "./pages/SOSSearching";
@@ -431,6 +432,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminAmbulances />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-reports"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminReports />
             </ProtectedRoute>
           }
         />

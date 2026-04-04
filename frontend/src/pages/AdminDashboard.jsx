@@ -108,6 +108,15 @@ function AdminDashboard() {
               <h3>Ambulances & Drivers</h3>
               <p>Add ambulances, create drivers and manage fleet status.</p>
             </div>
+
+            <div
+              className="dashboard-card-modern reports-card"
+              onClick={() => navigate("/admin-reports")}
+            >
+              <div className="dashboard-icon">📄</div>
+              <h3>View Reports</h3>
+              <p>View user uploaded reports and documents.</p>
+            </div>
           </div>
         </div>
       </div>

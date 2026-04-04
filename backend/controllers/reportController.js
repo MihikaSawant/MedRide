@@ -1,5 +1,6 @@
 
 const Report = require("../models/Report");
+const User = require("../models/User");
 const fs = require("fs");
 const path = require("path");
 
@@ -38,6 +39,19 @@ exports.getReports = async (req, res) => {
     res.json(reports);
   } catch (err) {
     console.log("Get reports error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getAllReports = async (req, res) => {
+  try {
+    const reports = await Report.find().populate("user", "name email").sort({
+      createdAt: -1,
+    });
+
+    res.json(reports);
+  } catch (err) {
+    console.log("Get all reports error:", err);
     res.status(500).json({ message: err.message });
   }
 };
