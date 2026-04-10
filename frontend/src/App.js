@@ -22,6 +22,9 @@ import MedicineStore from "./pages/MedicineStore";
 import AdminOrders from "./pages/AdminOrders";
 import AdminAmbulances from "./pages/AdminAmbulances";
 import AdminReports from "./pages/AdminReports";
+import AdminDoctors from "./pages/AdminDoctors";
+import DoctorLogin from "./pages/DoctorLogin";
+import DoctorDashboard from "./pages/DoctorDashboard";
 
 import SOS from "./pages/SOS";
 import SOSSearching from "./pages/SOSSearching";
@@ -35,6 +38,7 @@ import DriverLive from "./pages/DriverLive";
 
 import Chatbot from "./components/Chatbot";
 import VoiceAssistant from "./components/VoiceAssistant";
+import VideoConsultation from "./pages/VideoConsultation";
 
 function GestureHandler() {
   const navigate = useNavigate();
@@ -111,6 +115,13 @@ function getAuthByRole(role) {
     };
   }
 
+  if (role === "doctor") {
+    return {
+      token: localStorage.getItem("doctorToken"),
+      data: localStorage.getItem("doctorData"),
+    };
+  }
+
   return { token: null, data: null };
 }
 
@@ -123,6 +134,7 @@ function getLoginPathByRole(role) {
 function getDashboardPathByRole(role) {
   if (role === "admin") return "/admin-dashboard";
   if (role === "driver") return "/driver-dashboard";
+  if (role === "doctor") return "/doctor-dashboard";
   return "/dashboard";
 }
 
@@ -132,6 +144,11 @@ function getCurrentLoggedInRole() {
       role: "admin",
       token: localStorage.getItem("adminToken"),
       data: localStorage.getItem("adminData"),
+    },
+    {
+      role: "doctor",
+      token: localStorage.getItem("doctorToken"),
+      data: localStorage.getItem("doctorData"),
     },
     {
       role: "driver",
@@ -248,6 +265,15 @@ function App() {
           element={
             <PublicAuthRoute role="admin">
               <AdminLogin />
+            </PublicAuthRoute>
+          }
+        />
+
+        <Route
+          path="/doctor-login"
+          element={
+            <PublicAuthRoute role="doctor">
+              <DoctorLogin />
             </PublicAuthRoute>
           }
         />
@@ -401,6 +427,15 @@ function App() {
         />
 
         <Route
+          path="/doctor-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin-bookings"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
@@ -445,6 +480,18 @@ function App() {
           }
         />
 
+        <Route
+          path="/video-consultation/:roomID"
+          element={<VideoConsultation />}
+        />
+        <Route
+          path="/admin-doctors"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDoctors />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Chatbot />

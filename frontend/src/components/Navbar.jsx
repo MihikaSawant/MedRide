@@ -27,6 +27,9 @@ function Navbar() {
       const adminToken = localStorage.getItem("adminToken");
       const adminData = localStorage.getItem("adminData");
 
+      const doctorToken = localStorage.getItem("doctorToken");
+      const doctorData = localStorage.getItem("doctorData");
+
       if (userToken && userData) {
         try {
           const parsedUser = JSON.parse(userData);
@@ -66,6 +69,20 @@ function Navbar() {
           console.log("Admin parse error:", error);
           localStorage.removeItem("adminToken");
           localStorage.removeItem("adminData");
+        }
+      }
+
+      if (doctorData) {
+        try {
+          const parsedDoctor = JSON.parse(doctorData);
+          setIsLoggedIn(true);
+          setCurrentUser(parsedDoctor);
+          setRole("doctor");
+          return;
+        } catch (error) {
+          console.log("Doctor parse error:", error);
+          localStorage.removeItem("doctorToken");
+          localStorage.removeItem("doctorData");
         }
       }
 
@@ -110,6 +127,10 @@ function Navbar() {
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminData");
       navigate("/admin-login");
+    } else if (role === "doctor") {
+      localStorage.removeItem("doctorToken");
+      localStorage.removeItem("doctorData");
+      navigate("/doctor-login");
     } else {
       localStorage.removeItem("userToken");
       localStorage.removeItem("userData");
@@ -231,6 +252,14 @@ function Navbar() {
                     </>
                   )}
 
+                  {role === "doctor" && (
+                    <>
+                      <div className="drawer-item" onClick={() => handleNavigate("/doctor-dashboard")}>
+                        <LayoutDashboard size={20} /> Doctor Dashboard
+                      </div>
+                    </>
+                  )}
+
                   <div className="drawer-footer">
                     <div className="drawer-item logout-btn" onClick={logoutUser}>
                       <LogOut size={20} /> Logout
@@ -247,6 +276,9 @@ function Navbar() {
                   </div>
                   <div className="drawer-item" onClick={() => handleNavigate("/driver-login")}>
                     <LogIn size={20} /> Driver Login
+                  </div>
+                  <div className="drawer-item" onClick={() => handleNavigate("/doctor-login")}>
+                    <LogIn size={20} /> Doctor Login
                   </div>
                   <div className="drawer-item" onClick={() => handleNavigate("/admin-login")}>
                     <ShieldCheck size={20} /> Admin Login

@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { io } from "socket.io-client";
+import { toast, Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import "../App.css";
+
+const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -11,6 +15,51 @@ function Dashboard() {
   const [bookingCount, setBookingCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
   const [profileStatus, setProfileStatus] = useState("Incomplete");
+  const [isCalling, setIsCalling] = useState(false);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const newSocket = io(SOCKET_URL);
+    setSocket(newSocket);
+
+    newSocket.on("call_accepted", ({ roomID, doctorName }) => {
+      setIsCalling(false);
+      toast.success(`Call accepted by Dr. ${doctorName}! Joining room...`);
+      navigate(`/video-consultation/${roomID}`);
+    });
+
+    newSocket.on("call_rejected", () => {
+      setIsCalling(false);
+      toast.error("Doctors are currently busy. Please try again later.");
+    });
+
+    return () => newSocket.disconnect();
+  }, [navigate]);
+
+  const requestDoctorCall = () => {
+    if (!socket || !user) return;
+    
+    setIsCalling(true);
+    toast.loading("Ringing available doctors...", { id: "callingToast" });
+    
+    const roomID = `room-${Math.floor(Math.random() * 10000)}`;
+    socket.emit("request_call", {
+      patientName: user.name,
+      roomID: roomID,
+      patientSocketId: socket.id
+    });
+    
+    // Auto timeout after 30 seconds
+    setTimeout(() => {
+      setIsCalling((prev) => {
+        if (prev) {
+          toast.error("No doctor picked up. Try again later.", { id: "callingToast" });
+          return false;
+        }
+        return prev;
+      });
+    }, 30000);
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
@@ -94,6 +143,7 @@ function Dashboard() {
     <div className="mobile-wrapper">
       <div className="phone-screen">
         <Navbar />
+        <Toaster />
 
         <div className="page-with-navbar dashboard-page">
           <div className="dashboard-hero">
@@ -158,6 +208,18 @@ function Dashboard() {
               <div className="dashboard-icon">📄</div>
               <h3>Reports</h3>
               <p>Upload and view your medical reports anytime.</p>
+            </div>
+
+            <div
+              className={`dashboard-card-modern consult-card ${isCalling ? 'opacity-50 pointer-events-none' : ''}`}
+              onClick={() => {
+                if (!isCalling) requestDoctorCall();
+              }}
+              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "white" }}
+            >
+              <div className="dashboard-icon">👨‍⚕️</div>
+              <h3>{isCalling ? 'Ringing...' : 'Consult Doctor'}</h3>
+              <p>{isCalling ? 'Waiting for a doctor to answer...' : 'Connect with a doctor over a video call instantly.'}</p>
             </div>
           </div>
         </div>

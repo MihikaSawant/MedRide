@@ -74,6 +74,16 @@ function AdminDashboard() {
 
           <div className="dashboard-grid-modern">
             <div
+              className="dashboard-card-modern consult-card"
+              onClick={() => navigate("/admin-doctors")}
+              style={{ background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", color: "white" }}
+            >
+              <div className="dashboard-icon">👨‍⚕️</div>
+              <h3>Manage Doctors</h3>
+              <p>Add doctors, send credentials & manage them.</p>
+            </div>
+
+            <div
               className="dashboard-card-modern booking-card"
               onClick={() => navigate("/admin-bookings")}
             >
@@ -116,6 +126,19 @@ function AdminDashboard() {
               <div className="dashboard-icon">📄</div>
               <h3>View Reports</h3>
               <p>View user uploaded reports and documents.</p>
+            </div>
+
+            <div
+              className="dashboard-card-modern consult-card"
+              onClick={() => {
+                const roomID = prompt("Enter Room ID provided by the patient:");
+                if (roomID) navigate(`/video-consultation/${roomID}`);
+              }}
+              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "white" }}
+            >
+              <div className="dashboard-icon">👨‍⚕️</div>
+              <h3>Join Consultation</h3>
+              <p>Join a patient's video consultation room.</p>
             </div>
           </div>
         </div>

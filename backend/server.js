@@ -15,6 +15,7 @@ const sosRoutes = require("./routes/sosRoutes");
 const ambulanceRoutes = require("./routes/ambulanceRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
 
 const Ambulance = require("./models/Ambulance");
 const Booking = require("./models/Booking");
@@ -68,6 +69,7 @@ app.use("/api/sos", sosRoutes);
 app.use("/api/ambulances", ambulanceRoutes);
 app.use("/api/drivers", driverRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 app.get(
   "/auth/google",
@@ -93,6 +95,34 @@ const shouldRouteToHospital = (status) => {
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
+
+  // === DOCTOR CALLING SIGNALING ===
+  socket.on("doctorLogin", (doctorId) => {
+    socket.join("online_doctors");
+    console.log(`Doctor ${doctorId} joined online_doctors`);
+  });
+
+  socket.on("request_call", ({ patientName, roomID, patientSocketId }) => {
+    console.log(`1. Call requested from ${patientName} for room ${roomID}`);
+    // Emit this ringing signal to all online doctors
+    io.to("online_doctors").emit("incoming_call", { 
+      patientName, 
+      roomID, 
+      patientSocketId: socket.id 
+    });
+  });
+
+  socket.on("accept_call", ({ roomID, patientSocketId, doctorName }) => {
+    console.log(`2. Call accepted by Dr. ${doctorName}, notifying patient`);
+    // Notify the specific patient that their call was accepted
+    io.to(patientSocketId).emit("call_accepted", { roomID, doctorName });
+  });
+
+  socket.on("reject_call", ({ roomID, patientSocketId }) => {
+    console.log(`Call rejected for room ${roomID}`);
+    io.to(patientSocketId).emit("call_rejected");
+  });
+  // ================================
 
   socket.on("joinBookingRoom", (bookingId) => {
     if (!bookingId) return;
