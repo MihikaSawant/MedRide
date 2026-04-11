@@ -16,9 +16,11 @@ const ambulanceRoutes = require("./routes/ambulanceRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const consultationRoutes = require("./routes/consultationRoutes");
 
 const Ambulance = require("./models/Ambulance");
 const Booking = require("./models/Booking");
+const Consultation = require("./models/Consultation");
 const getRouteDetails = require("./utils/getRouteDetails");
 
 const passport = require("passport");
@@ -70,6 +72,7 @@ app.use("/api/ambulances", ambulanceRoutes);
 app.use("/api/drivers", driverRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/doctors", doctorRoutes);
+app.use("/api/consultations", consultationRoutes);
 
 app.get(
   "/auth/google",
@@ -102,26 +105,42 @@ io.on("connection", (socket) => {
     console.log(`Doctor ${doctorId} joined online_doctors`);
   });
 
-socket.on("request_call", async ({ patientName, roomID, patientSocketId }) => {     
+socket.on("request_call", async ({ patientName, roomID, patientSocketId, patientId }) => {
+    try {
+      await Consultation.create({
+        patientId: patientId || null,
+        patientName: patientName,
+        roomID: roomID,
+        status: "Initiated",
+      });
+    } catch (err) {
+      console.log("Error creating summary:", err);
+    }
     const socketsInRoom = await io.in("online_doctors").fetchSockets();
-    console.log(`1. Call requested from ${patientName} for room ${roomID}`);    
-    console.log(`Sockets currently in online_doctors room: ${socketsInRoom.length}`);
-    // Emit this ringing signal to all online doctors
-    io.to("online_doctors").emit("incoming_call", { 
-      patientName, 
-      roomID, 
-      patientSocketId: socket.id 
+    io.to("online_doctors").emit("incoming_call", {
+      patientName,
+      patientId,
+      roomID,
+      patientSocketId: socket.id
     });
   });
 
-  socket.on("accept_call", ({ roomID, patientSocketId, doctorName }) => {
-    console.log(`2. Call accepted by Dr. ${doctorName}, notifying patient`);
-    // Notify the specific patient that their call was accepted
+  socket.on("accept_call", async ({ roomID, patientSocketId, doctorName, doctorId }) => {
+    try {
+      await Consultation.findOneAndUpdate(
+        { roomID },
+        { status: "Accepted", doctorName, doctorId: doctorId || null }
+      );
+    } catch (err) {
+      console.log(err);
+    }
     io.to(patientSocketId).emit("call_accepted", { roomID, doctorName });
   });
 
-  socket.on("reject_call", ({ roomID, patientSocketId }) => {
-    console.log(`Call rejected for room ${roomID}`);
+  socket.on("reject_call", async ({ roomID, patientSocketId }) => {
+    try {
+      await Consultation.findOneAndUpdate({ roomID }, { status: "Rejected" });
+    } catch (err) {}
     io.to(patientSocketId).emit("call_rejected");
   });
   // ================================

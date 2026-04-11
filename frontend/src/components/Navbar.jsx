@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Menu, X, LogOut, Home, User, UserPlus, 
   MapPin, LayoutDashboard, Truck, FileText, PlusCircle, 
-  Pill, LogIn, HeartPulse, Settings, FileSearch, ShieldCheck
+  Pill, LogIn, HeartPulse, Settings, FileSearch, ShieldCheck, Video
 } from "lucide-react";
 import "./Navigation.css";
 
@@ -206,6 +206,9 @@ function Navbar() {
                       <div className="drawer-item" onClick={() => handleNavigate("/reports")}>
                         <FileSearch size={20} /> Medical Reports
                       </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/call-history")}>
+                        <Video size={20} /> Call History
+                      </div>
                       <div className="drawer-item" onClick={() => handleNavigate("/sos")}>
                         <HeartPulse size={20} color="#ef4444" /> SOS Alert
                       </div>
@@ -246,6 +249,9 @@ function Navbar() {
                       <div className="drawer-item" onClick={() => handleNavigate("/admin-orders")}>
                         <FileSearch size={20} /> Medicine Orders
                       </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/admin-consultations")}>
+                        <Video size={20} /> Call History
+                      </div>
                       <div className="drawer-item" onClick={() => handleNavigate("/profile")}>
                         <ShieldCheck size={20} /> Account Settings
                       </div>
@@ -256,6 +262,9 @@ function Navbar() {
                     <>
                       <div className="drawer-item" onClick={() => handleNavigate("/doctor-dashboard")}>
                         <LayoutDashboard size={20} /> Doctor Dashboard
+                      </div>
+                      <div className="drawer-item" onClick={() => handleNavigate("/doctor-call-history")}>
+                        <Video size={20} /> Call History
                       </div>
                     </>
                   )}

@@ -45,22 +45,23 @@ const DoctorDashboard = () => {
 
   const acceptCall = () => {
     if (!socket || !incomingCall) return;
-    
-    socket.emit("accept_call", { 
-      roomID: incomingCall.roomID, 
+
+    socket.emit("accept_call", {
+      roomID: incomingCall.roomID,
       patientSocketId: incomingCall.patientSocketId,
-      doctorName: doctor.name
+      doctorName: doctor.name,
+      doctorId: doctor.id || doctor._id
     });
-    
+
     navigate(`/video-consultation/${incomingCall.roomID}`);
   };
 
   const rejectCall = () => {
     if (!socket || !incomingCall) return;
     
-    socket.emit("reject_call", { 
+    socket.emit("reject_call", {
       roomID: incomingCall.roomID,
-      patientSocketId: incomingCall.patientSocketId 
+      patientSocketId: incomingCall.patientSocketId
     });
     setIncomingCall(null);
   };

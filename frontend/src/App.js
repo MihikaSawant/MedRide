@@ -25,6 +25,9 @@ import AdminReports from "./pages/AdminReports";
 import AdminDoctors from "./pages/AdminDoctors";
 import DoctorLogin from "./pages/DoctorLogin";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import DoctorCallHistory from "./pages/DoctorCallHistory";
+import CallHistory from "./pages/CallHistory";
+import AdminConsultations from "./pages/AdminConsultations";
 
 import SOS from "./pages/SOS";
 import SOSSearching from "./pages/SOSSearching";
@@ -504,6 +507,26 @@ function App() {
               <AdminDoctors />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/admin-consultations"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminConsultations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/call-history"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <CallHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/doctor-call-history"
+          element={<DoctorCallHistory />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

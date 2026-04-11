@@ -129,6 +129,15 @@ function AdminDashboard() {
             </div>
 
             <div
+              className="dashboard-card-modern reports-card"
+              onClick={() => navigate("/admin-consultations")}
+            >
+              <div className="dashboard-icon">📞</div>
+              <h3>Consultation History</h3>
+              <p>View logs of all virtual consultations.</p>
+            </div>
+
+            <div
               className="dashboard-card-modern consult-card"
               onClick={() => {
                 const roomID = prompt("Enter Room ID provided by the patient:");

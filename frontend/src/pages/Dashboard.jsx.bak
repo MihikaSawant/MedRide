@@ -222,11 +222,21 @@ function Dashboard() {
               <h3>{isCalling ? 'Ringing...' : 'Consult Doctor'}</h3>
               <p>{isCalling ? 'Waiting for a doctor to answer...' : 'Connect with a doctor over a video call instantly.'}</p>
             </div>
+
+            <div
+              className={`dashboard-card-modern`}
+              onClick={() => navigate("/call-history")}
+              style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}    
+            >
+              <div className="dashboard-icon" style={{ background: "#e2e8f0", color: "#475569" }}>📞</div>
+              <h3 style={{ color: "#334155" }}>My Call Logs</h3>
+              <p style={{ color: "#64748b" }}>Check your past video consultation history.</p>       
             </div>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
 export default Dashboard;
