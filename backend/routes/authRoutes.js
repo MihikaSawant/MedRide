@@ -9,7 +9,8 @@ const {
   adminLogin,
   updateProfile,
   getMe,
-  addFamilyMember
+  addFamilyMember,
+  deleteUser
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -20,5 +21,6 @@ router.post("/admin/login", adminLogin);
 router.put("/update/:id", authMiddleware, updateProfile);
 router.post("/family", authMiddleware, addFamilyMember);
 router.get("/me", authMiddleware, getMe);
+router.delete("/delete/:id", authMiddleware, deleteUser);
 
 module.exports = router;

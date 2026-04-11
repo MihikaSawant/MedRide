@@ -197,6 +197,24 @@ function EditProfile() {
       alert(err?.response?.data?.message || "Error updating profile");
     }
   };
+n  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        const token = role === 'user' ? localStorage.getItem('userToken') : localStorage.getItem('driverToken');
+        if (role === 'user') {
+          await axios.delete(`/api/auth/delete/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        } else if (role === 'driver') {
+          await axios.delete(`/api/drivers/${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+        }
+        localStorage.clear();
+        navigate('/');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('Failed to delete account. Please try again.');
+      }
+    }
+  };
+
 
   return (
     <div className="mobile-wrapper">
@@ -326,6 +344,9 @@ function EditProfile() {
 
             <button className="save-profile-btn" onClick={updateProfile}>
               Save Changes
+            </button>
+            <button className="delete-account-btn" onClick={handleDeleteAccount} style={{ backgroundColor: '#ff4444', color: 'white', marginTop: '20px' }}>
+              Delete Account
             </button>
           </div>
         </div>

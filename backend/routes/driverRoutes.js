@@ -38,5 +38,11 @@ router.put(
   driverController.completeRide
 );
 
+router.delete(
+  "/:driverId",
+  authMiddleware,
+  driverController.deleteDriver
+);
+
 module.exports = router;
 

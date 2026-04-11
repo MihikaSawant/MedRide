@@ -35,6 +35,18 @@ function DriverDashboard() {
     navigate("/driver-login");
   };
 
+n  const deleteDriverAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your driver account? This action cannot be undone.')) {
+      try {
+        await axios.delete(`/api/drivers/${driver._id}`, authHeader());
+        logoutDriver();
+      } catch (err) {
+        console.error('Error deleting account:', err);
+        alert('Failed to delete account. Please try again.');
+      }
+    }
+  };
+
   const authHeader = () => ({
     headers: {
       Authorization: `Bearer ${getDriverToken()}`,
@@ -417,6 +429,9 @@ if (!driver?._id || !driver?.isOnline) {
 
           <button className="driver-logout-btn" onClick={logoutDriver}>
             Logout
+          </button>
+          <button className="driver-logout-btn" onClick={deleteDriverAccount} style={{ backgroundColor: '#ff4444', marginTop: '10px' }}>
+            Delete Account
           </button>
         </div>
       </div>

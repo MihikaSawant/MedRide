@@ -1076,3 +1076,15 @@ exports.updateDriverProfile = async (req, res) => {
   }
 }
 };
+exports.deleteDriver = async (req, res) => {
+  try {
+    if (req.user.driverId !== req.params.driverId && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    await Driver.findByIdAndDelete(req.params.driverId);
+    res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting account' });
+  }
+};
+

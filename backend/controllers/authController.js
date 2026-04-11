@@ -197,3 +197,15 @@ exports.adminLogin = async (req, res) => {
     });
   }
 };
+exports.deleteUser = async (req, res) => {
+  try {
+    if (req.user.id !== req.params.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting account' });
+  }
+};
+
