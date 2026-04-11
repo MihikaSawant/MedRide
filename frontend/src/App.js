@@ -217,6 +217,19 @@ function PublicAuthRoute({ children, role }) {
   return children;
 }
 
+function FloatingWidgets() {
+  const location = useLocation();
+  if (location.pathname.includes("/video-consultation")) {
+    return null;
+  }
+  return (
+    <>
+      <Chatbot />
+      <VoiceAssistant />
+    </>
+  );
+}
+
 function App() {
   useEffect(() => {
     // Override the default browser alert with react-hot-toast
@@ -494,8 +507,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Chatbot />
-      <VoiceAssistant />
+      <FloatingWidgets />
     </Router>
   );
 }

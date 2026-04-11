@@ -102,8 +102,10 @@ io.on("connection", (socket) => {
     console.log(`Doctor ${doctorId} joined online_doctors`);
   });
 
-  socket.on("request_call", ({ patientName, roomID, patientSocketId }) => {
-    console.log(`1. Call requested from ${patientName} for room ${roomID}`);
+socket.on("request_call", async ({ patientName, roomID, patientSocketId }) => {     
+    const socketsInRoom = await io.in("online_doctors").fetchSockets();
+    console.log(`1. Call requested from ${patientName} for room ${roomID}`);    
+    console.log(`Sockets currently in online_doctors room: ${socketsInRoom.length}`);
     // Emit this ringing signal to all online doctors
     io.to("online_doctors").emit("incoming_call", { 
       patientName, 

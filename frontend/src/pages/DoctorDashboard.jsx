@@ -27,6 +27,7 @@ const DoctorDashboard = () => {
       });
 
       newSocket.on("incoming_call", (data) => {
+        console.log("Incoming call received!", data);
         setIncomingCall(data);
       });
 
@@ -86,7 +87,7 @@ const DoctorDashboard = () => {
           </div>
 
           {incomingCall && (
-            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", backdropFilter: "blur(4px)" }}>
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", backdropFilter: "blur(4px)" }}>
               <div style={{ background: "white", borderRadius: "24px", padding: "30px", width: "100%", maxWidth: "320px", textAlign: "center", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
                 <h3 style={{ fontSize: "24px", fontWeight: "bold", color: "#1e293b", marginBottom: "8px" }}>Incoming Call!</h3>
                 <p style={{ color: "#64748b", marginBottom: "30px" }}><strong>{incomingCall.patientName}</strong> is requesting a consultation.</p>

@@ -10,8 +10,8 @@ const VideoConsultation = () => {
     const videoContainer = useRef(null);
 
     // IMPORTANT: Get yours from https://console.zegocloud.com/
-    const appID = 1205367677; // <--- REPLACE THIS 
-    const serverSecret = "87ad8a731b9d7cdfd8ebcb5c71a3de96"; // <--- REPLACE THIS
+    const appID = 545263761; // <--- REPLACE THIS 
+    const serverSecret = "e25f692c82fe49e3cb48924fb19e2f5a"; // <--- REPLACE THIS
 
     useEffect(() => {
         if (appID === 1205367677) return; // Halt if using fake ID
@@ -44,8 +44,10 @@ const VideoConsultation = () => {
                         mode: ZegoUIKitPrebuilt.OneONoneCall,
                     },
                     showScreenSharingButton: true,
+                    showPreJoinView: false,
+                    showLeavingView: false,
                     onLeaveRoom: () => {
-                        navigate("/dashboard");
+                        window.location.href = "/dashboard";
                     }
                 });
             }
@@ -54,14 +56,11 @@ const VideoConsultation = () => {
         if (videoContainer.current) {
             initZego();
         }
-        
+
         return () => {
             isMounted = false;
-            if (zc) {
-                zc.destroy();
-            }
         };
-    }, [roomID, navigate]);
+    }, [roomID]);
 
     return (
         <div className="mobile-wrapper">
