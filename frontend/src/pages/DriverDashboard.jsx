@@ -35,7 +35,7 @@ function DriverDashboard() {
     navigate("/driver-login");
   };
 
-n  const deleteDriverAccount = async () => {
+  const deleteDriverAccount = async () => {
     if (window.confirm('Are you sure you want to delete your driver account? This action cannot be undone.')) {
       try {
         await axios.delete(`/api/drivers/${driver._id}`, authHeader());

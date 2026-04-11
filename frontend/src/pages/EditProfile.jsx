@@ -197,7 +197,7 @@ function EditProfile() {
       alert(err?.response?.data?.message || "Error updating profile");
     }
   };
-n  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = async () => {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
         const token = role === 'user' ? localStorage.getItem('userToken') : localStorage.getItem('driverToken');
