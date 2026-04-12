@@ -17,10 +17,13 @@ const upload = multer({ storage: storage });
 const {
 addMedicine,
 getMedicines,
-deleteMedicine
+deleteMedicine,
+bulkUploadMedicines
 } = require("../controllers/medicineController");
 
 router.post("/", upload.single('image'), addMedicine);
+
+router.post("/bulk", upload.single('file'), bulkUploadMedicines);
 
 router.get("/", getMedicines);
 

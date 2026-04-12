@@ -14,6 +14,7 @@ function AdminMedicines() {
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [bulkFile, setBulkFile] = useState(null);
 
   useEffect(() => {
     fetchMedicines();
@@ -33,6 +34,36 @@ function AdminMedicines() {
 
       console.log("Medicine fetch error:", error);
 
+    }
+  };
+
+  const handleBulkUpload = async () => {
+    if (!bulkFile) {
+      alert("Please select a CSV file first.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const formData = new FormData();
+      formData.append("file", bulkFile);
+
+      const res = await axios.post("/api/medicines/bulk", formData, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert(`Upload complete! Added: ${res.data.added}, Skipped (duplicates): ${res.data.skipped}`);
+      setBulkFile(null);
+      if (document.getElementById("bulk-file")) {
+        document.getElementById("bulk-file").value = "";
+      }
+      fetchMedicines();
+    } catch (error) {
+      console.log("Bulk upload error:", error);
+      alert("Bulk upload failed. Ensure you uploaded a valid CSV file.");
     }
   };
 
@@ -119,7 +150,26 @@ function AdminMedicines() {
             </p>
 
           </div>
-
+          <div className="admin-section" style={{ padding: "20px", background: "white", marginBottom: "20px" }}>
+            <h3>Bulk Upload Medicines (CSV)</h3>
+            <div className="input-group" style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <input 
+                type="file" 
+                id="bulk-file"
+                accept=".csv"
+                onChange={(e) => setBulkFile(e.target.files[0])}
+                style={{ flex: 1 }}
+              />
+              <button 
+                onClick={handleBulkUpload} 
+                className="action-btn"
+                style={{ backgroundColor: "#007BFF", color: "white", padding: "8px 15px", border: "none", borderRadius: "5px" }}
+              >
+                Upload CSV
+              </button>
+            </div>
+            <p style={{ fontSize: "12px", color: "gray", marginTop: "5px" }}>CSV must include headers: name, price, stock, category (optional), description (optional)</p>
+          </div>
           <div className="admin-booking-card">
 
             <h3>Add Medicine</h3>
@@ -206,7 +256,7 @@ function AdminMedicines() {
 
                   {med.image && (
                     <img 
-                      src={`${API_BASE_URL}${med.image}`} 
+                      src={med.image.startsWith("http") ? med.image : `${API_BASE_URL}${med.image}`} 
                       alt={med.name} 
                       style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px", marginBottom: "10px" }}
                     />

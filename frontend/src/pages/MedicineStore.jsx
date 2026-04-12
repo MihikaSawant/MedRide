@@ -12,6 +12,8 @@ function MedicineStore() {
   const [view, setView] = useState("store"); // store, cart, checkout, payment, success, history
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     fetchMedicines();
@@ -70,6 +72,21 @@ function MedicineStore() {
   const getSubtotal = () => cart.reduce((a, b) => a + (b.price * b.quantity), 0);
   const getTax = () => Math.round(getSubtotal() * 0.05); // 5% tax
   const getTotal = () => getSubtotal() + getTax();
+
+  const uniqueCategories = ["All", ...new Set(medicines.map((m) => m.category || "Uncategorized"))];
+  
+  const filteredMedicines = medicines.filter((m) => {
+    const medName = m.name || "";
+    const medDesc = m.description || "";
+    
+    const matchesSearch = medName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          medDesc.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const cat = m.category || "Uncategorized";
+    const matchesCategory = selectedCategory === "All" || cat === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const placeOrder = async () => {
     try {
@@ -131,17 +148,53 @@ function MedicineStore() {
           {/* VIEW: STORE VIEW */}
           {view === "store" && (
             <>
-              {medicines.length === 0 ? (
+              {/* Category Filter and Search */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "15px" }}>
+                <input
+                  type="text"
+                  placeholder="Search medicines..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                    width: "100%",
+                    fontSize: "14px",
+                    boxSizing: "border-box"
+                  }}
+                />
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
+                    width: "100%",
+                    fontSize: "14px",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    boxSizing: "border-box"
+                  }}
+                >
+                  {uniqueCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {filteredMedicines.length === 0 ? (
                 <div className="empty-history-card">
-                  <h3>No Medicines Available</h3>
+                  <h3>No Medicines Found</h3>
                 </div>
               ) : (
                 <div className="history-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "15px", padding: "10px 0" }}>
-                  {medicines.map((m) => (
+                  {filteredMedicines.map((m) => (
                     <div className="history-card-modern" key={m._id} style={{ display: "flex", flexDirection: "column", padding: "10px", height: "100%", justifyContent: "space-between" }}>
                       {m.image ? (
                         <img
-                          src={`${API_BASE_URL}${m.image}`}
+                          src={m.image.startsWith("http") ? m.image : `${API_BASE_URL}${m.image}`}
                           alt={m.name}
                           style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "8px", marginBottom: "10px" }}
                         />
