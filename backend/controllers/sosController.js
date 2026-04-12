@@ -65,11 +65,8 @@ exports.bookSOS = async (req, res) => {
     const ambulances = await Ambulance.find({ status: "available" });
 
     if (!ambulances.length) {
-      booking.status = "No Driver Found";
-      await booking.save();
-
       return res.status(201).json({
-        message: "No ambulance available right now",
+        message: "Your SOS is broadcasting to all nearby drivers. Please hold on.",
         booking,
       });
     }
@@ -105,11 +102,8 @@ exports.bookSOS = async (req, res) => {
     }
 
     if (!selectedAmbulance || !selectedDriver) {
-      booking.status = "No Driver Found";
-      await booking.save();
-
       return res.status(201).json({
-        message: "SOS created, but no online driver available right now",
+        message: "SOS created, broadcasting to all online drivers...",
         booking,
       });
     }

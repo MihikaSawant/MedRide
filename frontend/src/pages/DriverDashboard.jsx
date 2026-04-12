@@ -385,13 +385,16 @@ if (!driver?._id || !driver?.isOnline) {
                     <p style={{ fontSize: "14px", color: "#666" }}>No pending bookings right now. Waiting...</p>
                   ) : (
                     availableBookings.map((booking) => (
-                      <div key={booking._id} style={{ 
-                        border: "1px solid #ddd", 
-                        padding: "15px", 
-                        borderRadius: "8px", 
+                      <div key={booking._id} style={{
+                        border: booking.bookingType === "sos" ? "2px solid #e74c3c" : "1px solid #ddd",
+                        padding: "15px",
+                        borderRadius: "8px",
                         marginBottom: "10px",
-                        background: "#f9f9f9"
+                        background: booking.bookingType === "sos" ? "#ffebee" : "#f9f9f9"
                       }}>
+                        {booking.bookingType === "sos" && (
+                          <h4 style={{ color: "#d32f2f", margin: "0 0 10px 0" }}>🚨 URGENT SOS EMERGENCY</h4>
+                        )}
                         <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Pickup:</strong> {booking.pickup}</p>
                         <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Hospital:</strong> {booking.hospital}</p>
                         <p style={{ margin: "5px 0", fontSize: "14px" }}><strong>Phone:</strong> {booking.phone}</p>

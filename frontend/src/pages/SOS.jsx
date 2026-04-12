@@ -83,11 +83,11 @@ function SOS() {
   const getNearestHospitals = async (userLat, userLng) => {
     try {
       const query = `
-        [out:json][timeout:25];
+        [out:json][timeout:15];
         (
-          node["amenity"="hospital"](around:50000,${userLat},${userLng});
-          way["amenity"="hospital"](around:50000,${userLat},${userLng});
-          relation["amenity"="hospital"](around:50000,${userLat},${userLng});
+          node["amenity"="hospital"](around:5000,${userLat},${userLng});
+          way["amenity"="hospital"](around:5000,${userLat},${userLng});
+          relation["amenity"="hospital"](around:5000,${userLat},${userLng});
         );
         out center tags;
       `;
