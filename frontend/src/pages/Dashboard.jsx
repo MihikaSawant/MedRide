@@ -3,6 +3,17 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { toast, Toaster } from "react-hot-toast";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import Navbar from "../components/Navbar";
 import "../App.css";
 
@@ -14,6 +25,7 @@ function Dashboard() {
   const [user, setUser] = useState(null);
   const [bookingCount, setBookingCount] = useState(0);
   const [reportCount, setReportCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
   const [profileStatus, setProfileStatus] = useState("Incomplete");
   const [isCalling, setIsCalling] = useState(false);
   const [socket, setSocket] = useState(null);
@@ -129,6 +141,11 @@ function Dashboard() {
       );
 
       setReportCount(Array.isArray(reportsRes.data) ? reportsRes.data.length : 0);
+
+      const ordersRes = await axios.get("/api/orders/my-orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrderCount(Array.isArray(ordersRes.data) ? ordersRes.data.length : 0);
     } catch (error) {
       console.log("Dashboard analytics error:", error);
 
@@ -139,6 +156,12 @@ function Dashboard() {
       }
     }
   };
+
+  const chartData = [
+    { name: "Bookings", value: bookingCount, color: "#e74c3c" },
+    { name: "Reports", value: reportCount, color: "#3498db" },
+    { name: "Orders", value: orderCount, color: "#2ecc71" },
+  ];
 
   return (
     <div className="mobile-wrapper">
@@ -164,6 +187,11 @@ function Dashboard() {
             <div className="analytics-card">
               <h4>Total Reports</h4>
               <h2>{reportCount}</h2>
+            </div>
+
+            <div className="analytics-card">
+              <h4>Total Orders</h4>
+              <h2>{orderCount}</h2>
             </div>
 
             <div className="analytics-card">
@@ -223,6 +251,50 @@ function Dashboard() {
               <p>{isCalling ? 'Waiting for a doctor to answer...' : 'Connect with a doctor over a video call instantly.'}</p>
             </div>
             </div>
+
+          <div className="dashboard-section-title" style={{ marginTop: '20px' }}>Overview</div>
+          <div className="charts-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' }}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', height: '350px', display: 'flex', flexDirection: 'column' }}>
+              <h4 style={{ textAlign: 'center', marginBottom: '10px', color: '#1f2937', fontWeight: 'bold' }}>Activity Breakdown</h4>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', height: '350px', display: 'flex', flexDirection: 'column' }}>
+              <h4 style={{ textAlign: 'center', marginBottom: '10px', color: '#1f2937', fontWeight: 'bold' }}>Activity Comparison</h4>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Bar dataKey="value" radius={[5, 5, 0, 0]} barSize={40}>
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
       </div>
