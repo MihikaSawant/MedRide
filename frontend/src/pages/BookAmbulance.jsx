@@ -309,9 +309,8 @@ function BookAmbulance() {
 
       alert(
         res?.data?.message ||
-          "Booking created successfully. Admin will assign driver soon."
+          "Booking created successfully. Broadcasting to nearby drivers..."
       );
-
       setPickup("");
       setHospital("");
       setPhone("");
@@ -319,7 +318,7 @@ function BookAmbulance() {
       setNearbyHospitals([]);
       setSelectedHospitalCoords(null);
 
-      navigate("/my-bookings");
+      navigate("/tracking");
     } catch (error) {
       console.log("Booking error:", error);
 
@@ -342,7 +341,7 @@ function BookAmbulance() {
         <div className="booking-page">
           <div className="booking-header-card">
             <h2>Book Ambulance</h2>
-            <p>Normal ambulance booking. Admin will assign a driver.</p>
+            <p>Normal ambulance booking. The nearest available driver will be assigned.</p>
           </div>
 
           <div className="booking-form-card">
