@@ -32,49 +32,107 @@ function Dashboard() {
   const [profileStatus, setProfileStatus] = useState("Incomplete");
   const [isCalling, setIsCalling] = useState(false);
   const [socket, setSocket] = useState(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   useEffect(() => {
-    const newSocket = io(SOCKET_URL);
+    const newSocket = io(SOCKET_URL, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5
+    });
+    
+    newSocket.on("connect", () => {
+      console.log("Socket connected:", newSocket.id);
+      setIsSocketConnected(true);
+      toast.success("Connected to system", { duration: 2000 });
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+      setIsSocketConnected(false);
+    });
+
     setSocket(newSocket);
 
     newSocket.on("call_accepted", ({ roomID, doctorName }) => {
+      console.log("Call accepted event received:", { roomID, doctorName });
       setIsCalling(false);
-      toast.success(`Call accepted by Dr. ${doctorName}! Joining room...`);
-      navigate(`/video-consultation/${roomID}`);
+      toast.success(`Call accepted by Dr. ${doctorName}! Joining room...`, { duration: 3000 });
+      // Store roomID for video consultation
+      localStorage.setItem("activeConsultationRoomID", roomID);
+      setTimeout(() => {
+        navigate(`/video-consultation/${roomID}`);
+      }, 500);
     });
 
     newSocket.on("call_rejected", () => {
+      console.log("Call rejected event received");
       setIsCalling(false);
       toast.error("Doctors are currently busy. Please try again later.");
     });
 
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.disconnect();
+    };
   }, [navigate]);
 
   const requestDoctorCall = () => {
-    if (!socket || !user) return;
+    console.log("requestDoctorCall called. Socket connected?", isSocketConnected, "User?", !!user);
+    
+    if (!isSocketConnected) {
+      toast.error("Not connected to system. Please wait and try again.");
+      return;
+    }
+    
+    if (!socket || !user) {
+      toast.error("Unable to initiate call. Please refresh the page.");
+      console.error("Missing data - socket:", !!socket, "user:", !!user);
+      return;
+    }
     
     setIsCalling(true);
-    toast.loading("Ringing available doctors...", { id: "callingToast" });
+    const toastId = toast.loading("Ringing available doctors...");
     
-    const roomID = `room-${Math.floor(Math.random() * 10000)}`;
-    socket.emit("request_call", {
+    const roomID = `room-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const callData = {
       patientId: user.id || user._id,
       patientName: user.name || "Emergency Patient",
       roomID: roomID,
       patientSocketId: socket.id
-    });
+    };
+    
+    console.log("Emitting request_call with data:", callData);
+    
+    try {
+      socket.emit("request_call", callData, (acknowledgement) => {
+        console.log("request_call acknowledgement:", acknowledgement);
+      });
+      
+      // Save user info for video consultation
+      localStorage.setItem("userName", user.name || "Patient");
+      localStorage.setItem("userIdForConsultation", user.id || user._id);
+    } catch (error) {
+      console.error("Error emitting request_call:", error);
+      setIsCalling(false);
+      toast.error("Failed to initiate call", { id: toastId });
+      return;
+    }
     
     // Auto timeout after 30 seconds
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setIsCalling((prev) => {
         if (prev) {
-          toast.error("No doctor picked up. Try again later.", { id: "callingToast" });
+          console.log("Call timeout - no doctor accepted");
+          toast.error("No doctor picked up. Try again later.", { id: toastId });
           return false;
         }
         return prev;
       });
     }, 30000);
+    
+    // Store timeout ID so we can clear it if call accepted
+    window.callTimeoutId = timeoutId;
   };
 
   useEffect(() => {
@@ -243,15 +301,28 @@ function Dashboard() {
             </div>
 
             <div
-              className={`dashboard-card-modern consult-card ${isCalling ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`dashboard-card-modern consult-card ${(isCalling || !isSocketConnected) ? 'opacity-50 pointer-events-none' : ''}`}
               onClick={() => {
-                if (!isCalling) requestDoctorCall();
+                if (!isCalling && isSocketConnected) requestDoctorCall();
               }}
-              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", color: "white" }}
+              style={{ 
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", 
+                color: "white",
+                opacity: (!isSocketConnected) ? 0.6 : 1,
+                cursor: (!isSocketConnected || isCalling) ? "not-allowed" : "pointer"
+              }}
             >
               <div className="dashboard-icon">👨‍⚕️</div>
-              <h3>{isCalling ? 'Ringing...' : 'Consult Doctor'}</h3>
-              <p>{isCalling ? 'Waiting for a doctor to answer...' : 'Connect with a doctor over a video call instantly.'}</p>
+              <h3>
+                {!isSocketConnected ? '🔌 Connecting...' : isCalling ? 'Ringing...' : 'Consult Doctor'}
+              </h3>
+              <p>
+                {!isSocketConnected 
+                  ? 'Connecting to system...' 
+                  : isCalling 
+                  ? 'Waiting for a doctor to answer...' 
+                  : 'Connect with a doctor over a video call instantly.'}
+              </p>
             </div>
             </div>
 

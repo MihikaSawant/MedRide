@@ -14,6 +14,7 @@ const DoctorDashboard = () => {
   const [doctor, setDoctor] = useState(null);
   const [socket, setSocket] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
   useEffect(() => {
     const data = localStorage.getItem("doctorData");
@@ -21,20 +22,37 @@ const DoctorDashboard = () => {
       const parsed = JSON.parse(data);
       setDoctor(parsed);
 
-      const newSocket = io(SOCKET_URL);
+      const newSocket = io(SOCKET_URL, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5
+      });
       setSocket(newSocket);
 
       newSocket.on("connect", () => {
+        console.log("Doctor socket connected:", newSocket.id);
+        setIsSocketConnected(true);
         newSocket.emit("doctorLogin", parsed.id || parsed._id);
         toast.success("You are online and ready to receive calls.");
+      });
+
+      newSocket.on("disconnect", () => {
+        console.log("Doctor socket disconnected");
+        setIsSocketConnected(false);
+        toast.error("Connection lost. Reconnecting...");
       });
 
       newSocket.on("incoming_call", (data) => {
         console.log("Incoming call received!", data);
         setIncomingCall(data);
+        toast.info(`Call from ${data.patientName}!`, { duration: 5000 });
       });
 
-      return () => newSocket.disconnect();
+      return () => {
+        console.log("Disconnecting doctor socket");
+        newSocket.disconnect();
+      };
     } else {
       navigate("/doctor-login");
     }
@@ -47,26 +65,64 @@ const DoctorDashboard = () => {
   };
 
   const acceptCall = () => {
-    if (!socket || !incomingCall) return;
+    console.log("Accept call clicked. Socket connected?", isSocketConnected, "Has incoming call?", !!incomingCall);
+    
+    if (!socket || !incomingCall) {
+      toast.error("Unable to accept call. Please try again.");
+      return;
+    }
 
-    socket.emit("accept_call", {
+    const callData = {
       roomID: incomingCall.roomID,
       patientSocketId: incomingCall.patientSocketId,
       doctorName: doctor.name,
       doctorId: doctor.id || doctor._id
-    });
+    };
 
-    navigate(`/video-consultation/${incomingCall.roomID}`);
+    console.log("Emitting accept_call with data:", callData);
+    
+    try {
+      socket.emit("accept_call", callData);
+      // Save doctor info for video consultation
+      localStorage.setItem("doctorNameForConsultation", doctor.name);
+      localStorage.setItem("activeConsultationRoomID", incomingCall.roomID);
+      
+      // Clear incoming call state before navigating
+      setIncomingCall(null);
+      
+      toast.success("Call accepted! Joining room...");
+      setTimeout(() => {
+        navigate(`/video-consultation/${incomingCall.roomID}`);
+      }, 500);
+    } catch (error) {
+      console.error("Error accepting call:", error);
+      toast.error("Failed to accept call");
+    }
   };
 
   const rejectCall = () => {
-    if (!socket || !incomingCall) return;
+    console.log("Reject call clicked. Has incoming call?", !!incomingCall);
     
-    socket.emit("reject_call", {
+    if (!socket || !incomingCall) {
+      toast.error("Unable to reject call");
+      return;
+    }
+    
+    const callData = {
       roomID: incomingCall.roomID,
       patientSocketId: incomingCall.patientSocketId
-    });
-    setIncomingCall(null);
+    };
+    
+    console.log("Emitting reject_call with data:", callData);
+    
+    try {
+      socket.emit("reject_call", callData);
+      setIncomingCall(null);
+      toast.info("Call declined");
+    } catch (error) {
+      console.error("Error rejecting call:", error);
+      toast.error("Failed to decline call");
+    }
   };
 
   return (

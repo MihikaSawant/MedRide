@@ -102,46 +102,89 @@ io.on("connection", (socket) => {
   // === DOCTOR CALLING SIGNALING ===
   socket.on("doctorLogin", (doctorId) => {
     socket.join("online_doctors");
-    console.log(`Doctor ${doctorId} joined online_doctors`);
+    console.log(`✅ Doctor ${doctorId} joined online_doctors room. Socket: ${socket.id}`);
   });
 
-socket.on("request_call", async ({ patientName, roomID, patientSocketId, patientId }) => {
+  socket.on("request_call", async ({ patientName, roomID, patientSocketId, patientId }) => {
+    console.log("📞 Patient requesting call:", {
+      patientName,
+      patientId,
+      roomID,
+      patientSocketId: patientSocketId || socket.id,
+      serverSocketId: socket.id
+    });
+
     try {
-      await Consultation.create({
+      const consultation = await Consultation.create({
         patientId: patientId || null,
         patientName: patientName || "Emergency Patient",
         roomID: roomID,
         status: "Initiated",
       });
+      console.log("📝 Consultation created:", consultation._id);
     } catch (err) {
-      console.log("Error creating summary:", err);
+      console.error("❌ Error creating consultation:", err.message);
     }
+
     const socketsInRoom = await io.in("online_doctors").fetchSockets();
-    console.log(`Sending incoming_call to ${socketsInRoom.length} online doctors.`);
+    console.log(`📤 Sending incoming_call to ${socketsInRoom.length} online doctors.`);
+    
+    if (socketsInRoom.length === 0) {
+      console.warn("⚠️ WARNING: No doctors online! Patients will get timeout.");
+    }
+
     io.to("online_doctors").emit("incoming_call", {
       patientName,
       patientId,
       roomID,
-      patientSocketId: socket.id
+      patientSocketId: patientSocketId || socket.id  // Use provided ID or default to sender's ID
     });
   });
 
   socket.on("accept_call", async ({ roomID, patientSocketId, doctorName, doctorId }) => {
+    console.log("✅ Doctor accepting call:", {
+      roomID,
+      patientSocketId,
+      doctorName,
+      doctorId,
+      doctorSocket: socket.id
+    });
+
     try {
-      await Consultation.findOneAndUpdate(
+      const updated = await Consultation.findOneAndUpdate(
         { roomID },
-        { status: "Accepted", doctorName, doctorId: doctorId || null }
+        { 
+          status: "Accepted", 
+          doctorName, 
+          doctorId: doctorId || null
+        },
+        { new: true }
       );
+      console.log("✅ Consultation updated to Accepted:", updated._id);
     } catch (err) {
-      console.log(err);
+      console.error("❌ Error updating consultation:", err.message);
     }
+
+    console.log(`📨 Sending call_accepted to patient socket: ${patientSocketId}`);
     io.to(patientSocketId).emit("call_accepted", { roomID, doctorName });
   });
 
   socket.on("reject_call", async ({ roomID, patientSocketId }) => {
+    console.log("❌ Doctor rejecting call:", { roomID, patientSocketId, doctorSocket: socket.id });
+
     try {
-      await Consultation.findOneAndUpdate({ roomID }, { status: "Rejected" });
-    } catch (err) {}
+      const updated = await Consultation.findOneAndUpdate(
+        { roomID }, 
+        { 
+          status: "Rejected"
+        },
+        { new: true }
+      );
+      console.log("❌ Consultation updated to Rejected:", updated._id);
+    } catch (err) {
+      console.error("❌ Error updating consultation:", err.message);
+    }
+
     io.to(patientSocketId).emit("call_rejected");
   });
   // ================================
