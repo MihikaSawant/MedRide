@@ -10,7 +10,10 @@ const {
   updateProfile,
   getMe,
   addFamilyMember,
-  deleteUser
+  deleteUser,
+  forgotPassword,
+  verifyOTP,
+  resetPassword
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -18,6 +21,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.post("/register", register);
 router.post("/login", login);
 router.post("/admin/login", adminLogin);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 router.put("/update/:id", authMiddleware, updateProfile);
 router.post("/family", authMiddleware, addFamilyMember);
 router.get("/me", authMiddleware, getMe);

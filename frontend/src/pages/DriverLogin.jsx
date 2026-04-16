@@ -91,6 +91,15 @@ function DriverLogin() {
               {loading ? "Logging in..." : "Login"}
             </button>
 
+            <p style={{ textAlign: "center", marginTop: "10px", fontSize: "14px" }}>
+              <span
+                onClick={() => navigate("/driver-forgot-password")}
+                style={{ cursor: "pointer", color: "#1d4ed8", textDecoration: "underline" }}
+              >
+                Forgot Password?
+              </span>
+            </p>
+
             <button
               className="location-btn"
               style={{ marginTop: "10px" }}

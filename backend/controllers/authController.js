@@ -2,6 +2,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 exports.register = async (req, res) => {
   try {
@@ -206,6 +207,153 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: 'Account deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting account' });
+  }
+};
+
+// Setup email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Forgot Password - Send OTP
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Save OTP to user (valid for 10 minutes)
+    user.resetOTP = otp;
+    user.resetOTPExpiry = new Date(Date.now() + 600000); // 10 minutes
+    await user.save();
+
+    // Send OTP via email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "MedRide - Password Reset OTP",
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>Hi ${user.name || "User"},</p>
+        <p>Your One-Time Password (OTP) is:</p>
+        <h3 style="background: #f0f0f0; padding: 15px; border-radius: 5px; letter-spacing: 2px;">${otp}</h3>
+        <p>This OTP will expire in 10 minutes.</p>
+        <p>Do not share this OTP with anyone.</p>
+        <p>If you did not request this, please ignore this email.</p>
+        <br>
+        <p>Best regards,<br>MedRide Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.json({
+      message: "OTP has been sent to your registered email address.",
+      email: email,
+    });
+
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Verify OTP
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if OTP matches
+    if (user.resetOTP !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.resetOTPExpiry) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // OTP is valid - clear it and allow password reset
+    user.resetOTP = null;
+    user.resetOTPExpiry = null;
+    user.otpVerified = true; // Mark as verified for this session
+    await user.save();
+
+    return res.json({
+      message: "OTP verified successfully. You can now reset your password.",
+      verified: true,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+// Reset Password after OTP verification
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash and set new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.otpVerified = false;
+    await user.save();
+
+    return res.json({
+      message: "Password changed successfully. You can now login with your new password.",
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 };
 

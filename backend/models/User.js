@@ -56,7 +56,22 @@ gender: String,
 age: Number,
 bloodGroup: String,
 medicalConditions: String
-}]
+}],
+
+resetOTP:{
+type:String,
+default:null
+},
+
+resetOTPExpiry:{
+type:Date,
+default:null
+},
+
+otpVerified:{
+type:Boolean,
+default:false
+}
 
 });
 

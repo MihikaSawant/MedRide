@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import BookAmbulance from "./pages/BookAmbulance";
@@ -15,6 +16,7 @@ import ReportDetails from "./pages/ReportDetails";
 import GoogleSuccess from "./pages/GoogleSuccess";
 
 import AdminLogin from "./pages/AdminLogin";
+import AdminForgotPassword from "./pages/AdminForgotPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBookings from "./pages/AdminBookings";
 import AdminMedicines from "./pages/AdminMedicines";
@@ -24,6 +26,7 @@ import AdminAmbulances from "./pages/AdminAmbulances";
 import AdminReports from "./pages/AdminReports";
 import AdminDoctors from "./pages/AdminDoctors";
 import DoctorLogin from "./pages/DoctorLogin";
+import DoctorForgotPassword from "./pages/DoctorForgotPassword";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorCallHistory from "./pages/DoctorCallHistory";
 import CallHistory from "./pages/CallHistory";
@@ -35,6 +38,7 @@ import SOSTracking from "./pages/SOSTracking";
 
 import DriverDashboard from "./pages/DriverDashboard";
 import DriverLogin from "./pages/DriverLogin";
+import DriverForgotPassword from "./pages/DriverForgotPassword";
 import DriverRegister from "./pages/DriverRegister";
 import Tracking from "./pages/Tracking";
 import DriverLive from "./pages/DriverLive";
@@ -320,6 +324,11 @@ function App() {
         <Route path="/google-success" element={<GoogleSuccess />} />
         <Route path="/register" element={<Register />} />
         <Route path="/driver-register" element={<DriverRegister />} />
+        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin-forgot-password" element={<AdminForgotPassword />} />
+        <Route path="/doctor-forgot-password" element={<DoctorForgotPassword />} />
+        <Route path="/driver-forgot-password" element={<DriverForgotPassword />} />
 
         <Route
           path="/dashboard"

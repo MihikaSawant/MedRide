@@ -95,6 +95,11 @@ function Login() {
             Don't have an account?
             <span onClick={() => navigate("/register")}> Register</span>
           </p>
+
+          <p className="auth-switch">
+            Forgot your password?
+            <span onClick={() => navigate("/forgot-password")}> Reset here</span>
+          </p>
         </div>
       </div>
     </div>

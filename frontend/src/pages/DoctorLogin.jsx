@@ -56,6 +56,15 @@ const DoctorLogin = () => {
               Login
             </button>
           </form>
+
+          <p style={{ textAlign: "center", marginTop: "15px", fontSize: "14px" }}>
+            <span
+              onClick={() => navigate("/doctor-forgot-password")}
+              style={{ cursor: "pointer", color: "#059669", textDecoration: "underline" }}
+            >
+              Forgot Password?
+            </span>
+          </p>
         </div>
       </div>
     </div>

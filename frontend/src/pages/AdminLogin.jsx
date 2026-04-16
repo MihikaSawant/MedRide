@@ -68,6 +68,15 @@ function AdminLogin() {
                 Login as Admin
               </button>
             </form>
+
+            <p style={{ textAlign: "center", marginTop: "15px", fontSize: "14px" }}>
+              <span
+                onClick={() => navigate("/admin-forgot-password")}
+                style={{ cursor: "pointer", color: "#111827", textDecoration: "underline" }}
+              >
+                Forgot Password?
+              </span>
+            </p>
           </div>
         </div>
       </div>
