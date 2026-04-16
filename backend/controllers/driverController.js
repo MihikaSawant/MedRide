@@ -1,5 +1,6 @@
 
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const Driver = require("../models/Driver");
 const Booking = require("../models/Booking");
 const Ambulance = require("../models/Ambulance");
@@ -30,6 +31,20 @@ const getDistanceInKm = (lat1, lng1, lat2, lng2) => {
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+};
+
+const sanitizeRouteGeometry = (geometry) => {
+  if (!Array.isArray(geometry)) return [];
+
+  return geometry
+    .filter(
+      (point) =>
+        Array.isArray(point) &&
+        point.length >= 2 &&
+        Number.isFinite(Number(point[0])) &&
+        Number.isFinite(Number(point[1]))
+    )
+    .map((point) => [Number(point[0]), Number(point[1])]);
 };
 
 exports.createDriver = async (req, res) => {
@@ -282,24 +297,31 @@ exports.updateDriverLocation = async (req, res) => {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    driver.currentLocation = { lat, lng };
-    await driver.save();
+    const updatedDriver = await Driver.findByIdAndUpdate(
+      driverId,
+      {
+        $set: {
+          currentLocation: { lat, lng },
+        },
+      },
+      { new: true }
+    );
 
     if (driver.ambulanceId) {
-      driver.ambulanceId.currentLat = lat;
-      driver.ambulanceId.currentLng = lng;
-      await driver.ambulanceId.save();
+      await Ambulance.findByIdAndUpdate(driver.ambulanceId._id, {
+        $set: {
+          currentLat: lat,
+          currentLng: lng,
+        },
+      });
     }
 
     let updatedBooking = null;
 
-    if (driver.currentBookingId) {
+    if (driver.currentBookingId && mongoose.isValidObjectId(driver.currentBookingId)) {
       const booking = await Booking.findById(driver.currentBookingId);
 
       if (booking) {
-        booking.ambulanceLat = lat;
-        booking.ambulanceLng = lng;
-
         const pickupDistance =
           booking.pickupLat != null && booking.pickupLng != null
             ? getDistanceInKm(lat, lng, Number(booking.pickupLat), Number(booking.pickupLng))
@@ -361,38 +383,43 @@ exports.updateDriverLocation = async (req, res) => {
         if (routeData) {
           distanceKm = Number(routeData.distanceKm);
           eta = Number(routeData.durationMin);
-          routeGeometry = Array.isArray(routeData.geometry)
-            ? routeData.geometry
-            : [];
+          routeGeometry = sanitizeRouteGeometry(routeData.geometry);
         }
 
-        booking.status = liveStatus;
-        booking.eta = eta;
-        booking.distanceKm = distanceKm;
-        booking.routeTarget = routeTarget;
-        booking.routeGeometry = routeGeometry;
-
-        await booking.save();
-        updatedBooking = booking;
+        updatedBooking = await Booking.findByIdAndUpdate(
+          booking._id,
+          {
+            $set: {
+              ambulanceLat: lat,
+              ambulanceLng: lng,
+              status: liveStatus,
+              eta,
+              distanceKm,
+              routeTarget,
+              routeGeometry,
+            },
+          },
+          { new: true }
+        );
 
         const io = req.app.get("io");
-        if (io) {
-          io.to(`booking_${booking._id}`).emit("ambulanceLocationUpdated", {
-            bookingId: booking._id.toString(),
+        if (io && updatedBooking) {
+          io.to(`booking_${updatedBooking._id}`).emit("ambulanceLocationUpdated", {
+            bookingId: updatedBooking._id.toString(),
             lat,
             lng,
             eta,
             distanceKm,
             routeGeometry,
-            status: booking.status,
+            status: updatedBooking.status,
             routeTarget,
-            pickupLat: booking.pickupLat,
-            pickupLng: booking.pickupLng,
-            hospitalLat: booking.hospitalLat,
-            hospitalLng: booking.hospitalLng,
-            driverName: booking.driverName,
-            driverPhone: booking.driverPhone,
-            ambulanceNumber: booking.ambulanceNumber,
+            pickupLat: updatedBooking.pickupLat,
+            pickupLng: updatedBooking.pickupLng,
+            hospitalLat: updatedBooking.hospitalLat,
+            hospitalLng: updatedBooking.hospitalLng,
+            driverName: updatedBooking.driverName,
+            driverPhone: updatedBooking.driverPhone,
+            ambulanceNumber: updatedBooking.ambulanceNumber,
           });
         }
       }
@@ -400,7 +427,7 @@ exports.updateDriverLocation = async (req, res) => {
 
     return res.status(200).json({
       message: "Driver location updated successfully",
-      currentLocation: driver.currentLocation,
+      currentLocation: updatedDriver?.currentLocation || { lat, lng },
       booking: updatedBooking,
     });
   } catch (error) {

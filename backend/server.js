@@ -358,6 +358,16 @@ io.on("connection", (socket) => {
   });
 });
 
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.log(`Port ${PORT} is already in use. Backend is likely already running.`);
+    process.exit(0);
+  }
+
+  console.error("Server failed to start:", err);
+  process.exit(1);
+});
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
