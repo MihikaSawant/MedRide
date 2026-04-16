@@ -17,7 +17,10 @@ import {
 import Navbar from "../components/Navbar";
 import "../App.css";
 
-const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+let SOCKET_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+if (SOCKET_URL.includes("localhost") && window.location.hostname !== "localhost") {
+  SOCKET_URL = SOCKET_URL.replace("localhost", window.location.hostname);
+}
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -57,7 +60,7 @@ function Dashboard() {
     const roomID = `room-${Math.floor(Math.random() * 10000)}`;
     socket.emit("request_call", {
       patientId: user.id || user._id,
-      patientName: user.name,
+      patientName: user.name || "Emergency Patient",
       roomID: roomID,
       patientSocketId: socket.id
     });

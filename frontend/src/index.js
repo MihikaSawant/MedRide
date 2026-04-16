@@ -6,7 +6,10 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import "leaflet/dist/leaflet.css";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5052';
+let API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+if (API_BASE_URL.includes("localhost") && window.location.hostname !== "localhost") {
+  API_BASE_URL = API_BASE_URL.replace("localhost", window.location.hostname);
+}
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 

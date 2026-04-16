@@ -53,12 +53,26 @@ function GestureHandler() {
     const requiredSwipeDistance = 75; // How far right you must swipe
     const maxVerticalVariance = 100; // How much you can accidentally swipe up/down while swiping right
 
+    const shouldIgnoreTarget = (target) => {
+      if (!(target instanceof Element)) return false;
+
+      return Boolean(
+        target.closest(
+          "input, select, textarea, button, option, a, [role='button']"
+        )
+      );
+    };
+
     const handleStart = (clientX, clientY) => {
       startX = clientX;
       startY = clientY;
     };
 
-    const handleEnd = (clientX, clientY) => {
+    const handleEnd = (clientX, clientY, target) => {
+      if (shouldIgnoreTarget(target)) {
+        return;
+      }
+
       const diffX = clientX - startX; // Positive means swiped right, negative means swiped left
       const diffY = Math.abs(clientY - startY);
 
@@ -74,11 +88,11 @@ function GestureHandler() {
 
     // Touch events for mobile phones
     const handleTouchStart = (e) => handleStart(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    const handleTouchEnd = (e) => handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    const handleTouchEnd = (e) => handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target);
 
     // Mouse events for desktop testing
     const handleMouseDown = (e) => handleStart(e.clientX, e.clientY);
-    const handleMouseUp = (e) => handleEnd(e.clientX, e.clientY);
+    const handleMouseUp = (e) => handleEnd(e.clientX, e.clientY, e.target);
 
     window.addEventListener("touchstart", handleTouchStart);
     window.addEventListener("touchend", handleTouchEnd);

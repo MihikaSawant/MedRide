@@ -50,7 +50,7 @@ function Home() {
 
         <div className="page-with-navbar">
           <div className="home-hero">
-            <h1 className="home-title">Medirush</h1>
+            <h1 className="home-title">MedRide</h1>
             <p className="home-subtitle">
               Emergency medical help at your fingertips.
               Book ambulance, manage reports and access your health info anytime.

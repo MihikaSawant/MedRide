@@ -109,7 +109,7 @@ socket.on("request_call", async ({ patientName, roomID, patientSocketId, patient
     try {
       await Consultation.create({
         patientId: patientId || null,
-        patientName: patientName,
+        patientName: patientName || "Emergency Patient",
         roomID: roomID,
         status: "Initiated",
       });
@@ -117,6 +117,7 @@ socket.on("request_call", async ({ patientName, roomID, patientSocketId, patient
       console.log("Error creating summary:", err);
     }
     const socketsInRoom = await io.in("online_doctors").fetchSockets();
+    console.log(`Sending incoming_call to ${socketsInRoom.length} online doctors.`);
     io.to("online_doctors").emit("incoming_call", {
       patientName,
       patientId,

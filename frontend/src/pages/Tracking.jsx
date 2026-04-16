@@ -13,7 +13,11 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 
-const socket = io(process.env.REACT_APP_API_BASE_URL || "https://medride.onrender.com");
+let SOCKET_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:5000";
+if (SOCKET_URL.includes("localhost") && window.location.hostname !== "localhost") {
+  SOCKET_URL = SOCKET_URL.replace("localhost", window.location.hostname);
+}
+const socket = io(SOCKET_URL);
 
 const userIcon = new L.Icon({
   iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",

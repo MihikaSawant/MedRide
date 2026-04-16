@@ -6,20 +6,20 @@ import "../App.css";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 
-const userIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-  iconSize: [32, 32],
-});
+const buildDotIcon = (color) =>
+  L.divIcon({
+    className: "custom-map-dot",
+    html: `<span style="display:block;width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,0.18);"></span>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
+  });
 
-const hospitalIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-  iconSize: [32, 32],
-});
+const userIcon = buildDotIcon("#1d4ed8");
 
-const selectedHospitalIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-  iconSize: [32, 32],
-});
+const hospitalIcon = buildDotIcon("#dc2626");
+
+const selectedHospitalIcon = buildDotIcon("#059669");
 
 function BookAmbulance() {
   const navigate = useNavigate();
@@ -34,6 +34,12 @@ function BookAmbulance() {
   const [coords, setCoords] = useState(null);
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
   const [selectedHospitalCoords, setSelectedHospitalCoords] = useState(null);
+
+  const preventEnterSubmit = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  };
 
   const formatAddress = (addressObj) => {
     if (!addressObj) return "";
@@ -71,33 +77,79 @@ function BookAmbulance() {
     }
   };
 
+  const fetchOverpassHospitals = async (query) => {
+    const overpassEndpoints = [
+      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.openstreetmap.ru/api/interpreter",
+    ];
+
+    let lastError = null;
+
+    for (const endpoint of overpassEndpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=UTF-8",
+            Accept: "application/json",
+          },
+          body: query,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.indexOf("application/json") === -1) {
+          throw new Error(`Expected JSON but got ${contentType}`);
+        }
+
+        return await res.json();
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("Failed to fetch from Overpass endpoints");
+  };
+
   const getNearestHospitals = async (lat, lng) => {
     try {
-      const query = `
-        [out:json][timeout:25];
-        (
-          node["amenity"="hospital"](around:10000,${lat},${lng});
-          way["amenity"="hospital"](around:10000,${lat},${lng});
-          relation["amenity"="hospital"](around:10000,${lat},${lng});
-        );
-        out center tags;
-      `;
+      const searchRadii = [3500, 7000];
+      let data = null;
 
-      const url =
-        "https://overpass-api.de/api/interpreter?data=" +
-        encodeURIComponent(query);
+      for (const radius of searchRadii) {
+        const query = `
+          [out:json][timeout:18];
+          (
+            node["amenity"="hospital"](around:${radius},${lat},${lng});
+            way["amenity"="hospital"](around:${radius},${lat},${lng});
+            relation["amenity"="hospital"](around:${radius},${lat},${lng});
+          );
+          out center tags 25;
+        `;
 
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        try {
+          data = await fetchOverpassHospitals(query);
+          if (data?.elements?.length) {
+            break;
+          }
+        } catch (error) {
+          data = null;
+        }
       }
-      
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") === -1) {
-        throw new Error(`Expected JSON but got ${contentType}`);
-      }
 
-      const data = await res.json();
+      if (!data?.elements) {
+        throw new Error("No hospital data returned");
+      }
 
       const rawHospitals = data.elements
         .map((item, index) => ({
@@ -149,7 +201,7 @@ function BookAmbulance() {
     } catch (error) {
       console.log("Hospital fetch error:", error);
       setNearbyHospitals([]);
-      alert("Failed to fetch nearby hospitals");
+      alert("Hospital auto-fetch timed out. Please enter hospital name manually and use Search Hospital.");
     }
   };
 
@@ -352,10 +404,18 @@ function BookAmbulance() {
                 placeholder="Enter pickup location"
                 value={pickup}
                 onChange={(e) => setPickup(e.target.value)}
+                onKeyDown={preventEnterSubmit}
               />
             </div>
 
-            <button className="location-btn" onClick={getLocation}>
+            <button
+              type="button"
+              className="location-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                getLocation();
+              }}
+            >
               {locationLoading ? "Getting Location..." : "Use My Live Location"}
             </button>
 
@@ -415,6 +475,7 @@ function BookAmbulance() {
                 <select
                   className="hospital-select"
                   value={nearbyHospitals.some(h => h.name === hospital) ? hospital : "custom"}
+                  onKeyDown={preventEnterSubmit}
                   onChange={(e) => {
                     if (e.target.value === "custom") {
                       setHospital("");
@@ -442,11 +503,15 @@ function BookAmbulance() {
                   placeholder="Enter hospital name"
                   value={hospital}
                   onChange={(e) => handleHospitalInputChange(e.target.value)}
+                  onKeyDown={preventEnterSubmit}
                   style={{ flex: 1 }}
                 />
                 <button 
                   type="button" 
-                  onClick={searchCustomHospital}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    searchCustomHospital();
+                  }}
                   disabled={locationLoading}
                   style={{
                     padding: "10px 15px",
@@ -477,10 +542,18 @@ function BookAmbulance() {
                 placeholder="Enter phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={preventEnterSubmit}
               />
             </div>
 
-            <button className="confirm-booking-btn" onClick={bookAmbulance}>
+            <button
+              type="button"
+              className="confirm-booking-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                bookAmbulance();
+              }}
+            >
               {loading ? "Booking..." : "Confirm Booking"}
             </button>
           </div>

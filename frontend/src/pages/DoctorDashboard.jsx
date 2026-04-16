@@ -4,7 +4,10 @@ import { io } from "socket.io-client";
 import { toast, Toaster } from "react-hot-toast";
 import Navbar from "../components/Navbar";
 
-const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+let SOCKET_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+if (SOCKET_URL.includes("localhost") && window.location.hostname !== "localhost") {
+  SOCKET_URL = SOCKET_URL.replace("localhost", window.location.hostname);
+}
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
