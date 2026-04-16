@@ -96,16 +96,28 @@ const shouldRouteToHospital = (status) => {
   return ["Patient Picked", "Reached Hospital", "Completed"].includes(status);
 };
 
+const onlineDoctorSockets = new Set();
+
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
   // === DOCTOR CALLING SIGNALING ===
-  socket.on("doctorLogin", (doctorId) => {
+  socket.on("doctorLogin", (doctorId, ack) => {
     socket.join("online_doctors");
+    socket.data.isDoctor = true;
+    socket.data.doctorId = doctorId || null;
+    onlineDoctorSockets.add(socket.id);
     console.log(`✅ Doctor ${doctorId} joined online_doctors room. Socket: ${socket.id}`);
+    if (typeof ack === "function") {
+      ack({ ok: true, socketId: socket.id });
+    }
+    socket.emit("doctor_online_confirmed", {
+      socketId: socket.id,
+      onlineDoctors: onlineDoctorSockets.size,
+    });
   });
 
-  socket.on("request_call", async ({ patientName, roomID, patientSocketId, patientId }) => {
+  socket.on("request_call", async ({ patientName, roomID, patientSocketId, patientId }, ack) => {
     console.log("📞 Patient requesting call:", {
       patientName,
       patientId,
@@ -126,19 +138,27 @@ io.on("connection", (socket) => {
       console.error("❌ Error creating consultation:", err.message);
     }
 
-    const socketsInRoom = await io.in("online_doctors").fetchSockets();
-    console.log(`📤 Sending incoming_call to ${socketsInRoom.length} online doctors.`);
-    
-    if (socketsInRoom.length === 0) {
+    const doctorSocketIds = Array.from(onlineDoctorSockets);
+    console.log(`📤 Sending incoming_call to ${doctorSocketIds.length} online doctors.`);
+
+    if (doctorSocketIds.length === 0) {
       console.warn("⚠️ WARNING: No doctors online! Patients will get timeout.");
     }
 
-    io.to("online_doctors").emit("incoming_call", {
+    const incomingPayload = {
       patientName,
       patientId,
       roomID,
       patientSocketId: patientSocketId || socket.id  // Use provided ID or default to sender's ID
-    });
+    };
+
+    for (const doctorSocketId of doctorSocketIds) {
+      io.to(doctorSocketId).emit("incoming_call", incomingPayload);
+    }
+
+    if (typeof ack === "function") {
+      ack({ ok: true, onlineDoctors: doctorSocketIds.length, roomID });
+    }
   });
 
   socket.on("accept_call", async ({ roomID, patientSocketId, doctorName, doctorId }) => {
@@ -330,6 +350,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    if (onlineDoctorSockets.has(socket.id)) {
+      onlineDoctorSockets.delete(socket.id);
+      console.log(`Doctor socket removed from online list: ${socket.id}`);
+    }
     console.log("Socket disconnected:", socket.id);
   });
 });

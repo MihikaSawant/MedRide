@@ -107,11 +107,23 @@ function Dashboard() {
     try {
       socket.emit("request_call", callData, (acknowledgement) => {
         console.log("request_call acknowledgement:", acknowledgement);
+        if (!acknowledgement?.ok) {
+          setIsCalling(false);
+          toast.error("Call request failed. Please try again.", { id: toastId });
+          return;
+        }
+
+        if ((acknowledgement?.onlineDoctors || 0) === 0) {
+          toast.error("No doctors are online right now.", { id: toastId });
+        }
       });
       
       // Save user info for video consultation
       localStorage.setItem("userName", user.name || "Patient");
       localStorage.setItem("userIdForConsultation", user.id || user._id);
+      localStorage.setItem("currentConsultationRoomID", roomID);
+      localStorage.setItem("currentConsultationPatientName", user.name || "Patient");
+      localStorage.setItem("currentConsultationDoctorName", "Waiting for doctor...");
     } catch (error) {
       console.error("Error emitting request_call:", error);
       setIsCalling(false);

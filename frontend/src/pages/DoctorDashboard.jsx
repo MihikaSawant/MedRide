@@ -15,6 +15,8 @@ const DoctorDashboard = () => {
   const [socket, setSocket] = useState(null);
   const [incomingCall, setIncomingCall] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [doctorOnlineConfirmed, setDoctorOnlineConfirmed] = useState(false);
+  const [lastIncomingAt, setLastIncomingAt] = useState(null);
 
   useEffect(() => {
     const data = localStorage.getItem("doctorData");
@@ -33,20 +35,32 @@ const DoctorDashboard = () => {
       newSocket.on("connect", () => {
         console.log("Doctor socket connected:", newSocket.id);
         setIsSocketConnected(true);
-        newSocket.emit("doctorLogin", parsed.id || parsed._id);
+        newSocket.emit("doctorLogin", parsed.id || parsed._id, (ack) => {
+          console.log("doctorLogin ack:", ack);
+          if (ack?.ok) {
+            setDoctorOnlineConfirmed(true);
+          }
+        });
         toast.success("You are online and ready to receive calls.");
       });
 
       newSocket.on("disconnect", () => {
         console.log("Doctor socket disconnected");
         setIsSocketConnected(false);
+        setDoctorOnlineConfirmed(false);
         toast.error("Connection lost. Reconnecting...");
+      });
+
+      newSocket.on("doctor_online_confirmed", (payload) => {
+        console.log("doctor_online_confirmed:", payload);
+        setDoctorOnlineConfirmed(true);
       });
 
       newSocket.on("incoming_call", (data) => {
         console.log("Incoming call received!", data);
         setIncomingCall(data);
-        toast.info(`Call from ${data.patientName}!`, { duration: 5000 });
+        setLastIncomingAt(new Date());
+        toast(`Call from ${data.patientName}!`, { icon: "📞", duration: 5000 });
       });
 
       return () => {
@@ -86,6 +100,9 @@ const DoctorDashboard = () => {
       // Save doctor info for video consultation
       localStorage.setItem("doctorNameForConsultation", doctor.name);
       localStorage.setItem("activeConsultationRoomID", incomingCall.roomID);
+      localStorage.setItem("currentConsultationRoomID", incomingCall.roomID);
+      localStorage.setItem("currentConsultationDoctorName", doctor.name);
+      localStorage.setItem("currentConsultationPatientName", incomingCall.patientName || "Patient");
       
       // Clear incoming call state before navigating
       setIncomingCall(null);
@@ -118,7 +135,7 @@ const DoctorDashboard = () => {
     try {
       socket.emit("reject_call", callData);
       setIncomingCall(null);
-      toast.info("Call declined");
+      toast("Call declined", { icon: "ℹ️" });
     } catch (error) {
       console.error("Error rejecting call:", error);
       toast.error("Failed to decline call");
@@ -145,6 +162,58 @@ const DoctorDashboard = () => {
               Logout
             </button>
           </div>
+
+          <div
+            style={{
+              marginTop: "12px",
+              padding: "10px 12px",
+              borderRadius: "12px",
+              background: doctorOnlineConfirmed ? "#dcfce7" : "#fef3c7",
+              color: doctorOnlineConfirmed ? "#166534" : "#92400e",
+              fontSize: "13px",
+              fontWeight: 600,
+            }}
+          >
+            {doctorOnlineConfirmed
+              ? `Ready for calls (socket connected)`
+              : isSocketConnected
+              ? "Connected, waiting for online confirmation..."
+              : "Disconnected from call server"}
+            {lastIncomingAt ? ` | Last incoming: ${lastIncomingAt.toLocaleTimeString()}` : ""}
+          </div>
+
+          {incomingCall && (
+            <div
+              style={{
+                marginTop: "14px",
+                background: "#ecfeff",
+                border: "1px solid #a5f3fc",
+                borderRadius: "14px",
+                padding: "14px",
+              }}
+            >
+              <div style={{ fontWeight: 700, color: "#155e75", marginBottom: "6px" }}>
+                Incoming call from {incomingCall.patientName || "Patient"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#0e7490", marginBottom: "10px" }}>
+                Room ID: {incomingCall.roomID}
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  onClick={rejectCall}
+                  style={{ flex: 1, background: "#fee2e2", color: "#b91c1c", border: "none", padding: "10px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer" }}
+                >
+                  Decline
+                </button>
+                <button
+                  onClick={acceptCall}
+                  style={{ flex: 1, background: "#10b981", color: "white", border: "none", padding: "10px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer" }}
+                >
+                  Accept
+                </button>
+              </div>
+            </div>
+          )}
 
           {incomingCall && (
             <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.7)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", backdropFilter: "blur(4px)" }}>

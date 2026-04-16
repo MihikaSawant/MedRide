@@ -54,6 +54,8 @@ const CallHistory = () => {
                       {c.status}
                     </span>
                   </div>
+                  <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "#475569" }}>Patient: {c.patientName || "Unknown"}</p>
+                  <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "#94a3b8" }}>Room ID: {c.roomID}</p>
                   <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>Date: {new Date(c.date).toLocaleString()}</p>
                 </div>
               ))}
